@@ -1,0 +1,256 @@
+<title>태봉초 가는 버스</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@600;800&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+/* Layout: 지도(좌) + 경로 목록(우), 좁은 화면에선 위아래로 쌓음. 버스 색이 곧 강조색. */
+:root{
+  --bg:#f2f3ef; --panel:#ffffff; --fg:#1d2226; --muted:#5f6a70; --line:#dfe2dc; --grid:#e3e6df; --land:#fafbf8;
+  --c1001:#d23c32; --c1003:#d9821a; --c13:#2a63c9; --c14:#17946a; --c01:#8546c8; --cfeed:#7d8a96; --walk:#9aa3a8;
+  --start:#1d2226; --end:#d23c32;
+  --f-display:"Gothic A1","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --f-body:"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#13171a; --panel:#1b2024; --fg:#e8ecee; --muted:#9aa5ab; --line:#2c3338; --grid:#232a2e; --land:#171c1f;
+  --c1001:#f0625a; --c1003:#f0a03c; --c13:#5b8ff0; --c14:#3cc493; --c01:#ad7cf0; --cfeed:#9aa7b3; --walk:#6c767c;
+  --start:#e8ecee; --end:#f0625a; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#13171a; --panel:#1b2024; --fg:#e8ecee; --muted:#9aa5ab; --line:#2c3338; --grid:#232a2e; --land:#171c1f;
+  --c1001:#f0625a; --c1003:#f0a03c; --c13:#5b8ff0; --c14:#3cc493; --c01:#ad7cf0; --cfeed:#9aa7b3; --walk:#6c767c;
+  --start:#e8ecee; --end:#f0625a; color-scheme:dark;}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:14px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 28px}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+header h1{font-family:var(--f-display);font-weight:800;font-size:1.6rem;margin:0;text-wrap:balance;letter-spacing:-.01em}
+header p{margin:4px 0 0;color:var(--muted)}
+.main{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:16px;align-items:start}
+@media (max-width:880px){.main{grid-template-columns:minmax(0,1fr)}}
+.mapbox{position:relative;background:var(--land);border:1px solid var(--line);border-radius:10px;overflow:hidden;height:min(68vh,620px);min-height:380px}
+#map{width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+#map.drag{cursor:grabbing}
+.zoom{position:absolute;right:10px;top:10px;display:flex;flex-direction:column;gap:6px}
+.zoom button{width:34px;height:34px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--fg);font-size:18px;cursor:pointer}
+.zoom button:focus-visible,.route:focus-visible,.tab:focus-visible{outline:2px solid var(--c13);outline-offset:2px}
+.legend{position:absolute;left:10px;bottom:10px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 10px;display:flex;flex-wrap:wrap;gap:6px 12px;font-size:12px;max-width:calc(100% - 20px)}
+.legend span{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.sw{width:18px;height:4px;border-radius:2px;display:inline-block}
+.sw.walk{height:0;border-top:3px dotted var(--walk);border-radius:0}
+aside{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tab{border:1px solid var(--line);background:transparent;color:var(--fg);border-radius:999px;padding:6px 12px;font:inherit;font-weight:500;cursor:pointer}
+.tab[aria-selected="true"]{background:var(--fg);color:var(--panel);border-color:var(--fg)}
+.list{display:flex;flex-direction:column;gap:8px;margin:0;padding:0;list-style:none}
+.route{width:100%;text-align:left;display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:10px;align-items:start;border:1px solid var(--line);background:transparent;color:var(--fg);border-radius:8px;padding:10px;font:inherit;cursor:pointer}
+.route[aria-pressed="true"]{border-color:var(--fg);box-shadow:inset 0 0 0 1px var(--fg)}
+.rank{font-family:var(--f-display);font-weight:800;font-size:1.1rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.legs{display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+.chip{display:inline-block;color:#fff;font-weight:700;font-size:12px;border-radius:4px;padding:1px 6px;font-variant-numeric:tabular-nums}
+.arrow{color:var(--muted);font-size:12px}
+.via{color:var(--muted);font-size:12px;margin-top:3px}
+.time{font-family:var(--f-display);font-weight:800;font-size:1.15rem;font-variant-numeric:tabular-nums;text-align:right}
+.meta{color:var(--muted);font-size:12px;text-align:right;white-space:nowrap}
+.allbtn{align-self:flex-start;border:none;background:none;color:var(--muted);text-decoration:underline;cursor:pointer;font:inherit;padding:0}
+.note{color:var(--muted);font-size:12px;margin:0}
+.note a{color:inherit}
+svg text{font-family:var(--f-body)}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>그린컴퓨터아카데미 → 태봉초 버스 경로</h1>
+    <p>상무중앙로 44에서 청계로 33까지. 경로를 누르면 지도에서 그 경로만 강조돼.</p>
+  </header>
+
+  <div class="main">
+    <div class="mapbox">
+      <svg id="map" role="img" aria-label="출발지에서 태봉초까지 버스 경로 지도"></svg>
+      <div class="zoom">
+        <button id="zin" type="button" aria-label="확대">+</button>
+        <button id="zout" type="button" aria-label="축소">−</button>
+        <button id="zfit" type="button" aria-label="전체 보기">⤢</button>
+      </div>
+      <div class="legend" id="legend"></div>
+    </div>
+
+    <aside>
+      <div class="tabs" role="tablist">
+        <button class="tab" id="tab-transfer" role="tab" aria-selected="true" type="button">최소환승 순</button>
+        <button class="tab" id="tab-time" role="tab" aria-selected="false" type="button">최소시간 순</button>
+      </div>
+      <ul class="list" id="list"></ul>
+      <button class="allbtn" id="showall" type="button">전체 경로 같이 보기</button>
+      <p class="note">2026-11-12 <a href="https://map.kakao.com" target="_blank" rel="noopener">카카오맵</a> 대중교통 길찾기 결과의 실제 경로 좌표로 그렸어. 배경 지도 대신 1km 격자를 깔았어. 시간·요금은 검색한 시점 기준이야.</p>
+    </aside>
+  </div>
+</div>
+
+<script>
+const DATA=[
+{rank:1,time:"36분",min:36,transfers:0,fare:"1,700원",walk:"16분",steps:[
+{t:"W",p:"465507,459617,465507,459752,465527,459755,465527,459880,465527,460065"},
+{t:"B",v:["1001"],from:"치평역1번출구",to:"경신여고",p:"465528,460067,465503,460066,465501,460137,465501,460792,465501,460853,465501,461084,465526,461084,465501,461084,465501,461214,465500,461590,465524,461590,465500,461590,465500,461795,466534,461798,466859,461799,466861,461799,466861,461787,466861,461799,467113,461801,467132,461805,467163,461818,467176,461826,467180,462252,467184,462628,467253,462699,467325,462750,468310,462684,468383,462700,468750,462677,468748,462645,468750,462677,468852,462670,468883,462668,470206,462608,470237,462607,470989,462575,472000,462533,472028,462532,472609,462506,472609,462516,472609,462506,473301,462475,473422,462470,473433,462474,473470,462510,473476,462520,473482,462567,473534,463122,473555,463120,473534,463122,473539,463179,473607,463976,473631,464238,473640,464405,473663,464612,473690,464832,473721,465126,473725,465160,473746,465391,473755,465534,473743,465603,473761,465647,473787,465697,473831,465719,473882,465721,474151,465690,474298,465670,474659,465624,474656,465600"},
+{t:"W",p:"474652,465597,474712,465592,474757,465587,474765,465675,474802,465670,474835,465670,474830,465675,474827,465707,474825,465740,474807,465965,474797,466217,474805,466255,474817,466282,474832,466297,474865,466325,474972,466417,474987,466447,475025,466497,475172,466612,475225,466657,475250,466680,475262,466685,475320,466702"}]},
+{rank:2,time:"41분",min:41,transfers:0,fare:"1,250~1,700원",walk:"22분",steps:[
+{t:"W",p:"465507,459617,465507,459752,465527,459755,465527,459880,465525,460177,465525,460322,465525,460450,465527,460745,465535,460765,465527,460772,465527,460852,465525,461062,465525,461082"},
+{t:"B",v:["1003","1001"],from:"한국국토정보공사",to:"경신여고",p:"465526,461084,465501,461084,465501,461214,465500,461590,465524,461590,465500,461590,465500,461795,466534,461798,466859,461799,466861,461799,466861,461787,466861,461799,467113,461801,467132,461805,467163,461818,467176,461826,467180,462252,467184,462628,467253,462699,467325,462750,468310,462684,468383,462700,468750,462677,468748,462645,468750,462677,468852,462670,468883,462668,470206,462608,470237,462607,470989,462575,472000,462533,472028,462532,472609,462506,472609,462516,472609,462506,473301,462475,473422,462470,473433,462474,473470,462510,473476,462520,473482,462567,473534,463122,473555,463120,473534,463122,473539,463179,473607,463976,473631,464238,473640,464405,473663,464612,473690,464832,473721,465126,473725,465160,473746,465391,473755,465534,473743,465603,473761,465647,473787,465697,473831,465719,473882,465721,474151,465690,474298,465670,474659,465624,474656,465600"},
+{t:"W",p:"474652,465597,474712,465592,474757,465587,474765,465675,474802,465670,474835,465670,474830,465675,474827,465707,474825,465740,474807,465965,474797,466217,474805,466255,474817,466282,474832,466297,474865,466325,474972,466417,474987,466447,475025,466497,475172,466612,475225,466657,475250,466680,475262,466685,475320,466702"}]},
+{rank:3,time:"45분",min:45,transfers:0,fare:"1,250원",walk:"15분",steps:[
+{t:"W",p:"465507,459617,465507,459752,465527,459755,465527,459880,465527,460065"},
+{t:"B",v:["13"],from:"치평역1번출구",to:"경신여고",p:"465528,460067,465503,460066,465501,460137,465501,460792,465501,460853,465501,461084,465526,461084,465501,461084,465501,461214,465500,461590,465524,461590,465500,461590,465500,461795,466534,461798,466859,461799,466861,461799,466861,461787,466861,461799,467113,461801,467132,461805,467163,461818,467176,461826,467180,462252,467184,462628,467253,462699,467325,462750,467662,462727,467659,462691,467662,462727,468310,462684,468383,462700,468750,462677,468748,462645,468750,462677,468852,462670,468883,462668,469625,462634,469624,462603,469625,462634,470206,462608,470237,462607,470744,462586,470743,462557,470744,462586,470989,462575,472000,462533,472028,462532,472609,462506,472609,462516,472609,462506,473301,462475,473422,462470,473471,462467,473554,462463,473826,462449,473824,462427,473826,462449,474250,462426,474396,462420,474426,462424,474465,462441,474490,462453,474517,462485,474584,462564,474631,462628,474632,462632,474634,462684,474633,462686,474594,462754,474446,463089,474368,463293,474382,463298,474368,463293,474153,463853,474126,463931,474124,463972,474138,463993,474174,464033,474185,464023,474174,464033,474308,464182,474495,464071,474535,464047,474580,464036,474621,464028,474674,464028,474716,464032,474771,464048,474829,464067,474864,464085,474901,464110,474993,464175,475053,464227,475114,464294,475122,464309,475127,464325,475127,464344,475075,464466,475096,464475,475075,464466,475012,464612,474997,464641,474983,464676,474971,464723,474980,464798,474990,464870,474993,464912,474992,465126,474990,465188,474948,465434,474939,465475,474903,465579,474893,465590,474824,465652,474814,465656,474618,465676,474620,465700"},
+{t:"W",p:"474617,465690,474765,465675,474802,465670,474835,465670,474830,465675,474827,465707,474825,465740,474807,465965,474797,466217,474805,466255,474817,466282,474832,466297,474865,466325,474972,466417,474987,466447,475025,466497,475172,466612,475225,466657,475250,466680,475262,466685,475320,466702"}]},
+{rank:4,time:"36분",min:36,transfers:1,fare:"1,250~1,700원",walk:"16분",steps:[
+{t:"W",p:"465507,459617,465507,459752,465527,459755,465527,459880,465527,460065"},
+{t:"B",v:["22","46","39","73","13","82","14","1001"],from:"치평역1번출구",to:"한국국토정보공사",p:"465528,460067,465503,460066,465501,460137,465501,460792,465501,460853,465501,461084,465526,461084"},
+{t:"B",v:["1003"],from:"한국국토정보공사",to:"경신여고",p:"465526,461084,465501,461084,465501,461214,465500,461590,465524,461590,465500,461590,465500,461795,466534,461798,466859,461799,466861,461799,466861,461787,466861,461799,467113,461801,467132,461805,467163,461818,467176,461826,467180,462252,467184,462628,467253,462699,467325,462750,468310,462684,468383,462700,468750,462677,468748,462645,468750,462677,468852,462670,468883,462668,470206,462608,470237,462607,470989,462575,472000,462533,472028,462532,472609,462506,472609,462516,472609,462506,473301,462475,473422,462470,473433,462474,473470,462510,473476,462520,473482,462567,473534,463122,473555,463120,473534,463122,473539,463179,473607,463976,473631,464238,473640,464405,473663,464612,473690,464832,473721,465126,473725,465160,473746,465391,473755,465534,473743,465603,473761,465647,473787,465697,473831,465719,473882,465721,474151,465690,474298,465670,474659,465624,474656,465600"},
+{t:"W",p:"474652,465597,474712,465592,474757,465587,474765,465675,474802,465670,474835,465670,474830,465675,474827,465707,474825,465740,474807,465965,474797,466217,474805,466255,474817,466282,474832,466297,474865,466325,474972,466417,474987,466447,475025,466497,475172,466612,475225,466657,475250,466680,475262,466685,475320,466702"}]},
+{rank:5,time:"48분",min:48,transfers:0,fare:"1,250원",walk:"11분",steps:[
+{t:"W",p:"465647,459620,465647,459755,465762,459755,465830,459755,465835,459752,465912,459752,465997,459752"},
+{t:"B",v:["14"],from:"대우디오빌",to:"용봉현대1차아파트",p:"465999,459756,465999,459779,466164,459778,466223,459779,466937,459775,466951,459796,466968,459839,466971,459865,466972,460038,466996,460038,466972,460038,466977,460796,466980,460966,466990,461026,466995,461050,467016,461045,466995,461050,467010,461124,467118,461466,467138,461530,467152,461581,467160,461654,467170,461800,467749,461801,467749,461787,467749,461801,467750,461801,467941,461800,467977,461799,468080,461801,468173,461779,468347,461695,468410,461665,468418,461662,468414,461653,468418,461662,468598,461584,468705,461557,468793,461555,469252,461535,469252,461523,469252,461535,469566,461521,470165,461499,470198,461498,470696,461475,470763,461472,470762,461459,470763,461472,471438,461440,471493,461437,471493,461428,471493,461437,471527,461436,471937,461408,471946,461413,471959,461422,471967,461434,471976,461661,471989,461660,471976,461661,471989,461963,472008,462028,472028,462532,472609,462506,472609,462516,472609,462506,473301,462475,473422,462470,473471,462467,473554,462463,473826,462449,473824,462427,473826,462449,474250,462426,474396,462420,474426,462424,474465,462441,474490,462453,474517,462485,474584,462564,474698,462573,474797,462506,474887,462469,475685,462359,475729,462348,475858,462312,475922,462292,475917,462275,475922,462292,476010,462263,476338,462164,476359,462175,476375,462186,476384,462205,476473,462463,476577,462804,476624,462889,476627,462904,476626,462923,476594,463002,476566,463070,476535,463121,476524,463150,476509,463185,476499,463198,476418,463302,476340,463386,476284,463440,476245,463464,476163,463516,476115,463545,476120,463553,476115,463545,476089,463561,475478,463959,475465,463967,475470,463976,475465,463967,475397,464008,475319,464077,475268,464137,475189,464236,475144,464307,475127,464344,475075,464466,475096,464475,475075,464466,475012,464612,474997,464641,474983,464676,474971,464723,474980,464798,474990,464870,474993,464912,474992,465126,474990,465188,474948,465434,474939,465475,474903,465579,474837,465654,474790,465724,474781,465735,474646,465889,474618,465924,474624,465929,474618,465924,474452,466124,474254,466369,474297,466417,474334,466443,474368,466457,474443,466476,474499,466502,474536,466533,474642,466685,474693,466790,474710,466857,474722,466904,474728,466902"},
+{t:"W",p:"474715,466905,474687,466802,474807,466787,474855,466780,474947,466687,474917,466642,474920,466615,475007,466542,475192,466695,475222,466687,475250,466680,475262,466685,475320,466702"}]},
+{rank:6,time:"38분",min:38,transfers:1,fare:"1,250~1,700원",walk:"16분",steps:[
+{t:"W",p:"465507,459617,465507,459752,465527,459755,465527,459880,465527,460065"},
+{t:"B",v:["22","39","73","13","82","1001"],from:"치평역1번출구",to:"시청광주청사",p:"465528,460067,465503,460066,465501,460137,465501,460792,465501,460853,465501,461084,465526,461084,465501,461084,465501,461214,465500,461590,465524,461590,465500,461590,465500,461795,466534,461798,466859,461799,466861,461799,466861,461787"},
+{t:"B",v:["01"],from:"시청광주청사",to:"경신여고",p:"466861,461787,466861,461799,467113,461801,467132,461805,467163,461818,467176,461826,467180,462252,467184,462628,467253,462699,467325,462750,467662,462727,467659,462691,467662,462727,468310,462684,468383,462700,468750,462677,468748,462645,468750,462677,468852,462670,468883,462668,469625,462634,469624,462603,469625,462634,470206,462608,470237,462607,470744,462586,470743,462557,470744,462586,470989,462575,472000,462533,472028,462532,472609,462506,472609,462516,472609,462506,473301,462475,473422,462470,473433,462474,473470,462510,473476,462520,473482,462567,473534,463122,473555,463120,473534,463122,473539,463179,473607,463976,473631,464238,473640,464405,473663,464612,473690,464832,473693,464865,473710,464863,473693,464865,473721,465126,473725,465160,473746,465391,473755,465534,473743,465603,473761,465647,473787,465697,473831,465719,473882,465721,474151,465690,474298,465670,474659,465624,474656,465600"},
+{t:"W",p:"474652,465597,474712,465592,474757,465587,474765,465675,474802,465670,474835,465670,474830,465675,474827,465707,474825,465740,474807,465965,474797,466217,474805,466255,474817,466282,474832,466297,474865,466325,474972,466417,474987,466447,475025,466497,475172,466612,475225,466657,475250,466680,475262,466685,475320,466702"}]},
+{rank:7,time:"48분",min:48,transfers:0,fare:"1,250원",walk:"27분",steps:[
+{t:"W",p:"465507,459617,465507,459752,465407,459752,465387,459752,465387,459877,465387,460175,465385,460322,465385,460447,465385,460770,465385,460850,465385,460855,465387,461067,465385,461277,465372,461290,465362,461292,465280,461292,465280,461345,465267,461345,465267,461400"},
+{t:"B",v:["01"],from:"상무대우아파트",to:"경신여고",p:"465267,461402,465255,461402,465258,461792,465402,461795,465500,461795,466534,461798,466859,461799,466861,461799,466861,461787,466861,461799,467113,461801,467132,461805,467163,461818,467176,461826,467180,462252,467184,462628,467253,462699,467325,462750,467662,462727,467659,462691,467662,462727,468310,462684,468383,462700,468750,462677,468748,462645,468750,462677,468852,462670,468883,462668,469625,462634,469624,462603,469625,462634,470206,462608,470237,462607,470744,462586,470743,462557,470744,462586,470989,462575,472000,462533,472028,462532,472609,462506,472609,462516,472609,462506,473301,462475,473422,462470,473433,462474,473470,462510,473476,462520,473482,462567,473534,463122,473555,463120,473534,463122,473539,463179,473607,463976,473631,464238,473640,464405,473663,464612,473690,464832,473693,464865,473710,464863,473693,464865,473721,465126,473725,465160,473746,465391,473755,465534,473743,465603,473761,465647,473787,465697,473831,465719,473882,465721,474151,465690,474298,465670,474659,465624,474656,465600"},
+{t:"W",p:"474652,465597,474712,465592,474757,465587,474765,465675,474802,465670,474835,465670,474830,465675,474827,465707,474825,465740,474807,465965,474797,466217,474805,466255,474817,466282,474832,466297,474865,466325,474972,466417,474987,466447,475025,466497,475172,466612,475225,466657,475250,466680,475262,466685,475320,466702"}]}
+];
+// 좌표는 카카오맵 WCONGNAMUL(2.5단위 = 1m). 그대로 평면 좌표로 쓴다.
+const UNIT_PER_M=2.5;
+const START={x:465583,y:459600,name:"그린컴퓨터아카데미"}, END={x:475390,y:466684,name:"태봉초"};
+const STOPS=[
+ {n:"치평역1번출구",x:465528,y:460067,a:"r"},{n:"한국국토정보공사",x:465526,y:461084,a:"r"},
+ {n:"상무대우아파트",x:465267,y:461402,a:"l"},{n:"대우디오빌",x:465999,y:459756,a:"r"},
+ {n:"시청광주청사",x:466861,y:461787,a:"t"},{n:"광주종합버스터미널",x:472609,y:462516,a:"b"},
+ {n:"경신여고",x:474656,y:465600,a:"l"},{n:"용봉현대1차아파트",x:474728,y:466902,a:"l"}
+];
+const LINES={"1001":"--c1001","1003":"--c1003","13":"--c13","14":"--c14","01":"--c01",feed:"--cfeed"};
+const LEG_NAME={"1001":"1001 (직행)","1003":"1003","13":"13","14":"14","01":"01",feed:"환승 전 여러 버스"};
+DATA.forEach(r=>r.steps.forEach(s=>{const a=s.p.split(",").map(Number);s.pts=[];for(let i=0;i<a.length;i+=2)s.pts.push([a[i],a[i+1]]);}));
+const lineKey=s=>s.v.length>2?"feed":s.v[0];
+const cssv=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const colorOf=s=>s.t==="W"?cssv("--walk"):cssv(LINES[lineKey(s)]);
+
+const ORDERS={transfer:[1,2,3,5,7,4,6],time:[1,4,6,2,3,5,7]};
+let order="transfer", selected=1, showAll=false;
+
+// 경계
+let minX=1e9,minY=1e9,maxX=-1e9,maxY=-1e9;
+DATA.forEach(r=>r.steps.forEach(s=>s.pts.forEach(([x,y])=>{minX=Math.min(minX,x);maxX=Math.max(maxX,x);minY=Math.min(minY,y);maxY=Math.max(maxY,y);})));
+const svg=document.getElementById("map");
+let view={cx:(minX+maxX)/2,cy:(minY+maxY)/2,s:1};
+function fit(){const w=svg.clientWidth,h=svg.clientHeight;const pad=60;view.cx=(minX+maxX)/2;view.cy=(minY+maxY)/2;view.s=Math.max((maxX-minX)/(w-pad*2),(maxY-minY)/(h-pad*2));}
+const P=(x,y)=>[(x-view.cx)/view.s+svg.clientWidth/2,(view.cy-y)/view.s+svg.clientHeight/2];
+
+function offsetPts(pts,d){ // d: 화면 px 단위 평행 이동
+  const sp=pts.map(([x,y])=>P(x,y)); if(!d)return sp;
+  const out=[];
+  for(let i=0;i<sp.length;i++){
+    let nx=0,ny=0;
+    for(const j of [i-1,i]){const a=sp[j],b=sp[j+1];if(!a||!b)continue;const dx=b[0]-a[0],dy=b[1]-a[1],L=Math.hypot(dx,dy);if(L<.01)continue;nx+=-dy/L;ny+=dx/L;}
+    const L=Math.hypot(nx,ny)||1; out.push([sp[i][0]+nx/L*d,sp[i][1]+ny/L*d]);
+  }
+  return out;
+}
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const poly=(pts,attrs)=>`<polyline points="${pts.map(p=>p[0].toFixed(1)+","+p[1].toFixed(1)).join(" ")}" fill="none" stroke-linejoin="round" stroke-linecap="round" ${attrs}/>`;
+
+function render(){
+  const w=svg.clientWidth,h=svg.clientHeight; if(!w||!h)return;
+  let g="";
+  // 1km 격자
+  const step=1000*UNIT_PER_M, grid=cssv("--grid");
+  const x0=view.cx-w/2*view.s, x1=view.cx+w/2*view.s, y0=view.cy-h/2*view.s, y1=view.cy+h/2*view.s;
+  for(let x=Math.ceil(x0/step)*step;x<x1;x+=step){const [px]=P(x,0);g+=`<line x1="${px}" y1="0" x2="${px}" y2="${h}" stroke="${grid}" stroke-width="1"/>`;}
+  for(let y=Math.ceil(y0/step)*step;y<y1;y+=step){const [,py]=P(0,y);g+=`<line x1="0" y1="${py}" x2="${w}" y2="${py}" stroke="${grid}" stroke-width="1"/>`;}
+  const ids=ORDERS[order];
+  const draw=(r,idx,focus)=>{
+    const off=showAll?(idx-3)*3.2:0;
+    r.steps.forEach(s=>{
+      const op=focus?1:.13;
+      if(s.t==="W") g+=poly(offsetPts(s.pts,0),`stroke="${colorOf(s)}" stroke-width="3" stroke-dasharray="1 6" opacity="${op}"`);
+      else{
+        const pts=offsetPts(s.pts,off);
+        if(focus) g+=poly(pts,`stroke="${cssv("--land")}" stroke-width="${showAll?6:9}" opacity="1"`);
+        g+=poly(pts,`stroke="${colorOf(s)}" stroke-width="${showAll?3.5:5.5}" opacity="${op}"`);
+      }
+    });
+  };
+  const sel=DATA.find(r=>r.rank===selected);
+  ids.forEach((id,i)=>{const r=DATA.find(d=>d.rank===id); if(showAll||r!==sel) draw(r,i,showAll);});
+  if(!showAll) draw(sel,0,true);
+  // 정류장
+  const fg=cssv("--fg"),land=cssv("--land"),muted=cssv("--muted");
+  const used=new Set(); if(!showAll) sel.steps.forEach(s=>{if(s.t==="B"){used.add(s.from);used.add(s.to);}});
+  STOPS.forEach(st=>{
+    const on=showAll||used.has(st.n); const [px,py]=P(st.x,st.y);
+    const dx={r:9,l:-9,t:0,b:0}[st.a], dy={r:4,l:4,t:-10,b:16}[st.a], an={r:"start",l:"end",t:"middle",b:"middle"}[st.a];
+    g+=`<circle cx="${px}" cy="${py}" r="${on?5:3.5}" fill="${land}" stroke="${on?fg:muted}" stroke-width="2" opacity="${on?1:.55}"/>`;
+    g+=`<text x="${px+dx}" y="${py+dy}" text-anchor="${an}" font-size="12" font-weight="${on?700:400}" fill="${on?fg:muted}" opacity="${on?1:.7}" paint-order="stroke" stroke="${land}" stroke-width="4" stroke-linejoin="round">${esc(st.n)}</text>`;
+  });
+  // 출발/도착
+  [[START,cssv("--start"),"출발"],[END,cssv("--end"),"도착"]].forEach(([pt,c,lab])=>{
+    const [px,py]=P(pt.x,pt.y);
+    g+=`<circle cx="${px}" cy="${py}" r="9" fill="${c}" stroke="${land}" stroke-width="3"/>`;
+    g+=`<text x="${px}" y="${py+26}" text-anchor="middle" font-size="13" font-weight="700" fill="${fg}" paint-order="stroke" stroke="${land}" stroke-width="4">${lab} · ${esc(pt.name)}</text>`;
+  });
+  // 축척 막대
+  const mPerPx=view.s/UNIT_PER_M; let m=[100,200,500,1000,2000,5000].find(v=>v/mPerPx>=70)||5000; const len=m/mPerPx;
+  g+=`<g transform="translate(${w-len-18},${h-22})"><rect x="-6" y="-18" width="${len+12}" height="28" rx="5" fill="${land}" opacity=".9"/><line x1="0" y1="0" x2="${len}" y2="0" stroke="${fg}" stroke-width="2"/><line x1="0" y1="-5" x2="0" y2="0" stroke="${fg}" stroke-width="2"/><line x1="${len}" y1="-5" x2="${len}" y2="0" stroke="${fg}" stroke-width="2"/><text x="${len/2}" y="-6" text-anchor="middle" font-size="11" fill="${fg}">${m>=1000?m/1000+" km":m+" m"}</text></g>`;
+  // 북쪽 표시
+  g+=`<g transform="translate(26,30)"><text x="0" y="0" text-anchor="middle" font-size="12" font-weight="700" fill="${muted}">N</text><path d="M0 4 L5 16 L0 13 L-5 16 Z" fill="${muted}"/></g>`;
+  svg.innerHTML=g;
+}
+
+function chips(r){
+  const bus=r.steps.filter(s=>s.t==="B");
+  return bus.map((s,i)=>{const k=lineKey(s);const label=k==="feed"?s.v.slice(0,4).join("·")+"…":s.v.join(" 또는 ");
+    return (i?'<span class="arrow">→</span>':"")+`<span class="chip" style="background:var(${LINES[k]})">${esc(label)}</span>`;}).join("");
+}
+function via(r){
+  const bus=r.steps.filter(s=>s.t==="B");
+  return bus.map(s=>s.from).concat(bus[bus.length-1].to).join(" → ");
+}
+function renderList(){
+  const ul=document.getElementById("list");
+  ul.innerHTML=ORDERS[order].map((id,i)=>{const r=DATA.find(d=>d.rank===id);
+    return `<li><button class="route" type="button" data-rank="${id}" aria-pressed="${!showAll&&id===selected}">
+      <span class="rank">${i+1}</span>
+      <span><span class="legs">${chips(r)}</span><div class="via">${esc(via(r))}</div></span>
+      <span><div class="time">${r.time}</div><div class="meta">${r.transfers?"환승 "+r.transfers+"회":"환승 없음"}</div><div class="meta">${r.fare} · 도보 ${r.walk}</div></span>
+    </button></li>`;}).join("");
+  ul.querySelectorAll(".route").forEach(b=>b.addEventListener("click",()=>{selected=+b.dataset.rank;showAll=false;renderList();render();}));
+  document.getElementById("showall").textContent=showAll?"선택한 경로만 보기":"전체 경로 같이 보기";
+}
+function renderLegend(){
+  const items=["1001","1003","13","14","01","feed"].map(k=>`<span><i class="sw" style="background:var(${LINES[k]})"></i>${LEG_NAME[k]}</span>`);
+  items.push(`<span><i class="sw walk"></i>도보</span>`);
+  document.getElementById("legend").innerHTML=items.join("");
+}
+function setOrder(o){order=o;document.getElementById("tab-transfer").setAttribute("aria-selected",o==="transfer");document.getElementById("tab-time").setAttribute("aria-selected",o==="time");renderList();render();}
+document.getElementById("tab-transfer").onclick=()=>setOrder("transfer");
+document.getElementById("tab-time").onclick=()=>setOrder("time");
+document.getElementById("showall").onclick=()=>{showAll=!showAll;renderList();render();};
+
+// 확대/이동
+function zoomAt(f,sx,sy){const w=svg.clientWidth,h=svg.clientHeight;sx??=w/2;sy??=h/2;
+  const wx=view.cx+(sx-w/2)*view.s, wy=view.cy-(sy-h/2)*view.s; view.s*=f; view.cx=wx-(sx-w/2)*view.s; view.cy=wy+(sy-h/2)*view.s; render();}
+document.getElementById("zin").onclick=()=>zoomAt(1/1.5);
+document.getElementById("zout").onclick=()=>zoomAt(1.5);
+document.getElementById("zfit").onclick=()=>{fit();render();};
+svg.addEventListener("wheel",e=>{e.preventDefault();const r=svg.getBoundingClientRect();zoomAt(e.deltaY<0?1/1.2:1.2,e.clientX-r.left,e.clientY-r.top);},{passive:false});
+let drag=null;
+svg.addEventListener("pointerdown",e=>{drag={x:e.clientX,y:e.clientY,cx:view.cx,cy:view.cy};svg.setPointerCapture(e.pointerId);svg.classList.add("drag");});
+svg.addEventListener("pointermove",e=>{if(!drag)return;view.cx=drag.cx-(e.clientX-drag.x)*view.s;view.cy=drag.cy+(e.clientY-drag.y)*view.s;render();});
+const end=()=>{drag=null;svg.classList.remove("drag");};
+svg.addEventListener("pointerup",end);svg.addEventListener("pointercancel",end);
+
+new ResizeObserver(()=>{fit();render();}).observe(svg);
+window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change",render);
+new MutationObserver(render).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+renderLegend();renderList();fit();render();
+</script>
