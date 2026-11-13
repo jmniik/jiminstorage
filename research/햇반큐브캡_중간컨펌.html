@@ -9,7 +9,7 @@ h1{font-size:34px;letter-spacing:-1px}
 h1 small{font-size:16px;font-weight:600;color:#fff;background:var(--acc);padding:3px 10px;border-radius:4px;margin-left:10px;vertical-align:middle}
 .tag{font-size:17px;color:var(--sub);margin-top:6px}
 .meta{font-size:13px;color:var(--sub);text-align:right;line-height:1.6}
-.grid{display:grid;grid-template-columns:640px 1fr;gap:22px}
+.grid{display:grid;grid-template-columns:640px minmax(0,1fr);gap:22px}
 .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px 20px}
 .card h2{font-size:18px;margin-bottom:10px;display:flex;gap:8px;align-items:center}
 .card h2 b{background:var(--ink);color:#fff;border-radius:50%;width:24px;height:24px;font-size:13px;display:inline-flex;align-items:center;justify-content:center}
@@ -23,7 +23,7 @@ table{width:100%;border-collapse:collapse;font-size:14px}
 th,td{border-bottom:1px solid var(--line);padding:7px 6px;text-align:left}
 th{background:#f1f3f5;font-size:13px}
 .right{display:flex;flex-direction:column;gap:18px}
-.bottom{display:grid;grid-template-columns:640px 1fr;gap:22px;margin-top:18px}
+.bottom{display:grid;grid-template-columns:640px minmax(0,1fr);gap:22px;margin-top:18px}
 ul.pt{list-style:none;font-size:14.5px;line-height:1.75}
 ul.pt li:before{content:"✔ ";color:var(--si);font-weight:700}
 .note{font-size:12px;color:var(--sub);margin-top:14px}
@@ -66,9 +66,13 @@ ul.pt li:before{content:"✔ ";color:var(--si);font-weight:700}
       <!-- handle (unfolded) -->
       <path d="M476 200 L560 200 Q578 200 578 218 L578 222 Q578 236 562 236 L476 236" fill="var(--si)" />
       <rect x="500" y="208" width="60" height="18" rx="9" fill="var(--siL)"/>
+      <!-- left handle -->
+      <path d="M120 200 L36 200 Q18 200 18 218 L18 222 Q18 236 34 236 L120 236" fill="var(--si)" />
+      <rect x="36" y="208" width="60" height="18" rx="9" fill="var(--siL)"/>
       <!-- folded ghost -->
       <path d="M470 196 Q520 150 498 120" stroke="var(--si)" stroke-width="3" stroke-dasharray="5 5" fill="none"/>
-      <text x="503" y="112" font-size="12" fill="var(--sub)">전자레인지 안에선 접기</text>
+      <path d="M126 196 Q76 150 98 120" stroke="var(--si)" stroke-width="3" stroke-dasharray="5 5" fill="none"/>
+      <text x="598" y="108" text-anchor="end" font-size="12" fill="var(--sub)">전자레인지 안에선 양쪽 접기</text>
       <!-- container -->
       <path d="M140 300 L456 300 L430 430 Q428 442 414 442 L182 442 Q168 442 166 430 Z" fill="#fff" stroke="#b9c2ca" stroke-width="2.5"/>
       <path d="M150 300 L446 300 L440 330 L156 330 Z" fill="var(--rice)"/>
@@ -81,12 +85,12 @@ ul.pt li:before{content:"✔ ";color:var(--si);font-weight:700}
       <!-- labels -->
       <g font-size="14" fill="var(--ink)">
         <line x1="330" y1="58" x2="400" y2="58" stroke="#9aa4ae"/><text x="406" y="54" font-weight="700">맛 큐브</text><text x="406" y="72" font-size="12" fill="var(--sub)">상온 고형 · 맛별 따로</text>
-        <line x1="262" y1="139" x2="60" y2="139" stroke="#9aa4ae"/><text x="20" y="116" font-weight="700">플립 마개</text><text x="20" y="133" font-size="12" fill="var(--sub)">실리콘 · 3단 조절</text>
-        <line x1="170" y1="200" x2="60" y2="200" stroke="#9aa4ae"/><text x="20" y="190" font-weight="700">돔형 뚜껑</text><text x="20" y="215" font-size="12" fill="var(--sub)">PP · 다회용</text><text x="20" y="230" font-size="12" fill="var(--sub)">섞일 공간 확보</text>
-        <line x1="104" y1="270" x2="60" y2="270" stroke="#9aa4ae"/><text x="20" y="262" font-weight="700">클립 2개</text><text x="20" y="279" font-size="12" fill="var(--sub)">용기를 꽉 물기</text>
-        <line x1="476" y1="244" x2="520" y2="270" stroke="#9aa4ae"/><text x="490" y="290" font-weight="700">실리콘 패킹</text>
+        <line x1="262" y1="139" x2="140" y2="62" stroke="#9aa4ae"/><text x="20" y="50" font-weight="700">플립 마개</text><text x="20" y="67" font-size="12" fill="var(--sub)">실리콘 · 3단 조절</text>
+        <line x1="190" y1="195" x2="200" y2="120" stroke="#9aa4ae"/><text x="150" y="98" font-weight="700">돔형 뚜껑</text><text x="150" y="115" font-size="12" fill="var(--sub)">PP · 다회용 · 섞일 공간 확보</text>
+        <text x="20" y="312" font-weight="700">클립 2개</text><text x="20" y="329" font-size="12" fill="var(--sub)">용기를 꽉 물기</text>
+        <line x1="460" y1="244" x2="540" y2="290" stroke="#9aa4ae"/><text x="598" y="306" text-anchor="end" font-weight="700">실리콘 패킹</text>
         <text x="500" y="262" font-weight="700" fill="var(--si)"></text>
-        <line x1="560" y1="236" x2="560" y2="330" stroke="#9aa4ae"/><text x="500" y="350" font-weight="700">안 뜨거운 손잡이</text><text x="500" y="367" font-size="12" fill="var(--sub)">실리콘 · 접이식</text>
+        <text x="598" y="350" text-anchor="end" font-weight="700">안 뜨거운 손잡이 ×2</text><text x="598" y="367" text-anchor="end" font-size="12" fill="var(--sub)">실리콘 · 접이식 · 양손으로 흔들기</text>
       </g>
       <!-- cube lineup -->
       <g transform="translate(110,470)" font-size="13">
@@ -102,7 +106,7 @@ ul.pt li:before{content:"✔ ";color:var(--si);font-weight:700}
     <!-- flip 3 states -->
     <div class="card">
       <h2><b>2</b>플립 마개 3단</h2>
-      <svg width="680" height="170" viewBox="0 0 680 170">
+      <svg width="100%" height="170" viewBox="-30 0 700 170">
         <g font-size="14" text-anchor="middle">
           <!-- open -->
           <g transform="translate(40,20)">
@@ -126,11 +130,11 @@ ul.pt li:before{content:"✔ ";color:var(--si);font-weight:700}
           <!-- closed -->
           <g transform="translate(460,20)">
             <path d="M0 90 Q0 60 90 56 Q180 60 180 90Z" fill="var(--pp)" stroke="var(--ppS)" stroke-width="2"/>
-            <rect x="60" y="42" width="60" height="16" rx="4" fill="var(--si)"/>
+            <rect x="60" y="42" width="60" height="16" rx="4" fill="var(--si)"/><rect x="-26" y="76" width="30" height="12" rx="6" fill="var(--si)"/><rect x="176" y="76" width="30" height="12" rx="6" fill="var(--si)"/>
             <g stroke="var(--acc)" stroke-width="3" fill="none" stroke-linecap="round">
-              <path d="M-8 40 q-10 20 0 40"/><path d="M188 40 q10 20 0 40"/><path d="M-18 34 q-12 26 0 52"/><path d="M198 34 q12 26 0 52"/>
+              <path d="M-34 40 q-10 20 0 40"/><path d="M214 40 q10 20 0 40"/><path d="M-44 34 q-12 26 0 52"/><path d="M224 34 q12 26 0 52"/>
             </g>
-            <text x="90" y="122" font-weight="700">③ 꾹 닫힘</text><text x="90" y="142" fill="var(--sub)" font-size="13">손잡이 잡고 흔들기</text>
+            <text x="90" y="122" font-weight="700">③ 꾹 닫힘</text><text x="90" y="142" fill="var(--sub)" font-size="13">양손으로 흔들기</text>
           </g>
         </g>
       </svg>
@@ -143,7 +147,7 @@ ul.pt li:before{content:"✔ ";color:var(--si);font-weight:700}
         <div class="step"><div class="n">2</div><b>뚜껑 딸깍</b>클립으로 결속</div>
         <div class="step"><div class="n">3</div><b>큐브 투입</b>마개 완전 열림</div>
         <div class="step"><div class="n">4</div><b>2분 데우기</b>마개 반 열림</div>
-        <div class="step hl"><div class="n">5</div><b>흔들기</b>손잡이 펼치고 꾹 닫고</div>
+        <div class="step hl"><div class="n">5</div><b>흔들기</b>양쪽 손잡이 잡고</div>
         <div class="step"><div class="n">6</div><b>완성</b>카레·짜장·비빔·덮밥</div>
       </div>
     </div>
@@ -154,7 +158,7 @@ ul.pt li:before{content:"✔ ";color:var(--si);font-weight:700}
         <tr><th>부분</th><th>소재</th><th>이유</th></tr>
         <tr><td>뚜껑 본체·클립</td><td>전자레인지용 PP</td><td>단단해서 흔들어도 안 휨</td></tr>
         <tr><td>플립 마개·테두리 패킹</td><td>실리콘</td><td>잘 휘고 밀폐 잘 됨</td></tr>
-        <tr><td>손잡이</td><td>실리콘 (PP 심 + 실리콘 커버)</td><td>안 뜨거움, 접이식</td></tr>
+        <tr><td>손잡이 ×2 (양쪽)</td><td>실리콘 (PP 심 + 실리콘 커버)</td><td>안 뜨거움, 접이식</td></tr>
         <tr><td>큐브</td><td>상온 고형 소스</td><td>냉동 보관 불필요</td></tr>
       </table>
     </div>
@@ -192,7 +196,7 @@ ul.pt li:before{content:"✔ ";color:var(--si);font-weight:700}
       <li>뚜껑은 한 번 사고 큐브만 계속 사는 구조: 면도기·면도날 모델</li>
       <li>새 밥 제품 없이 집에 있는 기존 햇반을 그대로 씀</li>
       <li>컵밥보다 보관 부피가 작고, 소스 봉지 쓰레기도 없음</li>
-      <li>계량할 필요 없이 손 안 대고 흔들기만 하면 끝 (안 뜨거운 손잡이)</li>
+      <li>계량할 필요 없이 손 안 대고 흔들기만 하면 끝 (안 뜨거운 양쪽 손잡이)</li>
       <li>비슷한 출품: 뚜껑 속 맛 캡슐 3건 → 다회용·부피 절감 구조는 없음</li>
     </ul>
     <div class="note">※ 볶음밥 식감은 전자레인지로 안 나와서 카레·짜장·비빔·덮밥 중심. 소재 내열 수치는 미확인.</div>
