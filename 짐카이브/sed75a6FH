@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><title>짐카이브 프로필</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@900&family=Caveat:wght@700&display=block">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#ddd;font-family:Pretendard,"Malgun Gothic",sans-serif}
+.p{width:1080px;height:1080px;display:none;position:relative;overflow:hidden}
+.p.on{display:block}
+svg text{font-family:Pretendard,"Malgun Gothic",sans-serif}
+</style></head><body>
+
+<!-- A: 폴더 + 짐 + AI 반짝이 -->
+<section class="p" id="a" style="background:#f4efe6">
+<svg width="1080" height="1080" viewBox="0 0 1080 1080">
+  <defs>
+    <linearGradient id="fa" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b2f3a"/><stop offset="1" stop-color="#1c1f27"/></linearGradient>
+    <filter id="sa" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="22" stdDeviation="22" flood-color="#000" flood-opacity=".18"/></filter>
+  </defs>
+  <!-- back paper sheets -->
+  <rect x="330" y="300" width="420" height="300" rx="26" fill="#ffffff" transform="rotate(-8 540 450)" filter="url(#sa)"/>
+  <rect x="345" y="290" width="400" height="300" rx="26" fill="#ffd9c7" transform="rotate(6 540 440)"/>
+  <!-- folder back with tab -->
+  <path d="M250 380 Q250 350 280 350 L450 350 Q470 350 482 366 L506 396 L800 396 Q830 396 830 426 L830 760 Q830 790 800 790 L280 790 Q250 790 250 760 Z" fill="#ff6b4a"/>
+  <!-- folder front -->
+  <path d="M232 470 Q236 440 266 440 L814 440 Q846 440 842 472 L812 772 Q808 800 778 800 L302 800 Q272 800 268 772 Z" fill="url(#fa)" filter="url(#sa)"/>
+  <text x="540" y="705" text-anchor="middle" font-size="250" font-weight="900" fill="#f4efe6" letter-spacing="-8">짐</text>
+  <!-- sparkles -->
+  <path d="M800 250 C810 300 820 310 870 320 C820 330 810 340 800 390 C790 340 780 330 730 320 C780 310 790 300 800 250 Z" fill="#ff6b4a"/>
+  <path d="M880 400 C885 422 890 427 912 432 C890 437 885 442 880 464 C875 442 870 437 848 432 C870 427 875 422 880 400 Z" fill="#2b2f3a"/>
+</svg>
+</section>
+
+<!-- B: 아카이브 서랍 + 라벨 '짐' -->
+<section class="p" id="b" style="background:#1f2430">
+<svg width="1080" height="1080" viewBox="0 0 1080 1080">
+  <defs>
+    <linearGradient id="db" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6f0e4"/><stop offset="1" stop-color="#e8dfcd"/></linearGradient>
+    <filter id="sb" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="24" stdDeviation="20" flood-color="#000" flood-opacity=".35"/></filter>
+  </defs>
+  <!-- cabinet -->
+  <rect x="270" y="250" width="540" height="600" rx="40" fill="url(#db)" filter="url(#sb)"/>
+  <line x1="290" y1="550" x2="790" y2="550" stroke="#d6cab3" stroke-width="6"/>
+  <!-- top drawer slightly open with cards -->
+  <rect x="300" y="285" width="480" height="235" rx="24" fill="#fbf8f1" stroke="#d6cab3" stroke-width="4"/>
+  <!-- label holder -->
+  <rect x="420" y="330" width="240" height="140" rx="16" fill="#ffffff" stroke="#c9b99a" stroke-width="5"/>
+  <text x="540" y="445" text-anchor="middle" font-size="120" font-weight="900" fill="#1f2430" letter-spacing="-4">짐</text>
+  <!-- handle bottom drawer -->
+  <rect x="300" y="580" width="480" height="235" rx="24" fill="#fbf8f1" stroke="#d6cab3" stroke-width="4"/>
+  <rect x="455" y="680" width="170" height="34" rx="17" fill="#ff7a59"/>
+  <!-- sparkle -->
+  <path d="M820 180 C832 238 844 250 902 262 C844 274 832 286 820 344 C808 286 796 274 738 262 C796 250 808 238 820 180 Z" fill="#ffcf5a"/>
+  <path d="M220 820 C226 846 232 852 258 858 C232 864 226 870 220 896 C214 870 208 864 182 858 C208 852 214 846 220 820 Z" fill="#ff7a59"/>
+</svg>
+</section>
+
+<!-- C: 레터링 짐카이브 스티커 -->
+<section class="p" id="c" style="background:#ff6b4a">
+<svg width="1080" height="1080" viewBox="0 0 1080 1080">
+  <defs>
+    <filter id="sc" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="18" stdDeviation="16" flood-color="#7a2410" flood-opacity=".35"/></filter>
+  </defs>
+  <!-- stacked index cards -->
+  <rect x="300" y="330" width="480" height="420" rx="34" fill="#ffd2c2" transform="rotate(-9 540 540)"/>
+  <rect x="300" y="330" width="480" height="420" rx="34" fill="#fff6ec" transform="rotate(5 540 540)" filter="url(#sc)"/>
+  <!-- tab -->
+  <rect x="340" y="300" width="170" height="70" rx="18" fill="#1f2430" transform="rotate(5 540 540)"/>
+  <text x="425" y="348" text-anchor="middle" font-size="34" font-weight="800" fill="#fff6ec" transform="rotate(5 540 540)" letter-spacing="2">ARCHIVE</text>
+  <g transform="rotate(5 540 540)">
+    <text x="540" y="610" text-anchor="middle" font-size="200" font-weight="900" fill="#1f2430" letter-spacing="-10">짐</text>
+    <text x="540" y="690" text-anchor="middle" font-size="64" font-weight="800" fill="#ff6b4a" letter-spacing="-1">카이브</text>
+  </g>
+  <path d="M790 220 C802 276 814 288 870 300 C814 312 802 324 790 380 C778 324 766 312 710 300 C766 288 778 276 790 220 Z" fill="#fff6ec"/>
+</svg>
+</section>
+
+<!-- D/E/F: 느낌표 + 점 자리에 JM -->
+<section class="p" id="d" style="background:#f4efe6">
+<svg width="1080" height="1080" viewBox="0 0 1080 1080">
+  <path d="M478 200 L602 200 L578 640 Q576 668 548 668 L532 668 Q504 668 502 640 Z" fill="#23272f"/>
+  <text x="540" y="860" text-anchor="middle" font-size="190" font-weight="900" fill="#ff6b4a" letter-spacing="-6">JM</text>
+</svg>
+</section>
+<section class="p" id="e" style="background:#ff6b4a">
+<svg width="1080" height="1080" viewBox="0 0 1080 1080">
+  <path d="M478 200 L602 200 L578 640 Q576 668 548 668 L532 668 Q504 668 502 640 Z" fill="#fff6ec"/>
+  <text x="540" y="860" text-anchor="middle" font-size="190" font-weight="900" fill="#23272f" letter-spacing="-6">JM</text>
+</svg>
+</section>
+<section class="p" id="f" style="background:#1f2430">
+<svg width="1080" height="1080" viewBox="0 0 1080 1080">
+  <path d="M478 200 L602 200 L578 640 Q576 668 548 668 L532 668 Q504 668 502 640 Z" fill="#f4efe6"/>
+  <text x="540" y="860" text-anchor="middle" font-size="190" font-weight="900" fill="#ffcf5a" letter-spacing="-6">JM</text>
+</svg>
+</section>
+
+<section class="p" id="g" style="background:#5a3a24">
+<svg width="1080" height="1080" viewBox="0 0 1080 1080">
+  <text x="557" y="725" text-anchor="middle" font-size="560" font-weight="900" fill="#ffcf3a" stroke="#ffcf3a" stroke-width="22" stroke-linejoin="round" letter-spacing="34" style="font-family:Nunito,sans-serif">JM</text>
+</svg>
+</section>
+<section class="p" id="preview3" style="background:#fff;width:520px;height:440px">
+  <div style="display:flex;justify-content:center;align-items:center;height:440px">
+    <div style="width:340px;height:340px;border-radius:50%;overflow:hidden;box-shadow:0 0 0 1px #ddd"><iframe src="프로필.html#g" style="width:1080px;height:1080px;border:0;transform:scale(.3148);transform-origin:0 0"></iframe></div>
+  </div>
+</section>
+
+<section class="p" id="h" style="background:#efefef">
+<svg width="1080" height="1080" viewBox="0 0 1080 1080">
+  <!-- instagram default avatar -->
+  <circle cx="540" cy="420" r="190" fill="#ffffff"/>
+  <path d="M170 1080 Q170 690 540 690 Q910 690 910 1080 Z" fill="#ffffff"/>
+  <!-- handwriting -->
+  <g transform="rotate(-9 540 560)">
+    <text x="540" y="600" text-anchor="middle" font-size="230" fill="#1b1b1b" style="font-family:'Caveat',cursive;font-weight:700" letter-spacing="2">ai archive</text>
+    <path d="M250 650 C380 630 560 662 700 640 C760 632 820 640 850 648" fill="none" stroke="#1b1b1b" stroke-width="10" stroke-linecap="round"/>
+  </g>
+</svg>
+</section>
+<section class="p" id="preview4" style="background:#fff;width:520px;height:440px">
+  <div style="display:flex;justify-content:center;align-items:center;height:440px">
+    <div style="width:340px;height:340px;border-radius:50%;overflow:hidden;box-shadow:0 0 0 1px #ddd"><iframe src="프로필.html#h" style="width:1080px;height:1080px;border:0;transform:scale(.3148);transform-origin:0 0"></iframe></div>
+  </div>
+</section>
+
+<section class="p" id="preview2" style="background:#fff;width:1080px;height:520px">
+  <div style="display:flex;gap:60px;justify-content:center;align-items:center;height:440px">
+    <div style="text-align:center"><div style="width:280px;height:280px;border-radius:50%;overflow:hidden;box-shadow:0 0 0 1px #ddd"><iframe src="프로필.html#d" style="width:1080px;height:1080px;border:0;transform:scale(.2593);transform-origin:0 0"></iframe></div><div style="font:700 28px Pretendard;margin-top:16px">D 아이보리</div></div>
+    <div style="text-align:center"><div style="width:280px;height:280px;border-radius:50%;overflow:hidden;box-shadow:0 0 0 1px #ddd"><iframe src="프로필.html#e" style="width:1080px;height:1080px;border:0;transform:scale(.2593);transform-origin:0 0"></iframe></div><div style="font:700 28px Pretendard;margin-top:16px">E 코랄</div></div>
+    <div style="text-align:center"><div style="width:280px;height:280px;border-radius:50%;overflow:hidden;box-shadow:0 0 0 1px #ddd"><iframe src="프로필.html#f" style="width:1080px;height:1080px;border:0;transform:scale(.2593);transform-origin:0 0"></iframe></div><div style="font:700 28px Pretendard;margin-top:16px">F 남색</div></div>
+  </div>
+</section>
+
+<!-- 원형 미리보기 -->
+<section class="p" id="preview" style="background:#fff;width:1080px;height:520px">
+  <div style="display:flex;gap:60px;justify-content:center;align-items:center;height:440px">
+    <div style="text-align:center"><div style="width:280px;height:280px;border-radius:50%;overflow:hidden;box-shadow:0 0 0 1px #ddd"><iframe src="프로필.html#a" style="width:1080px;height:1080px;border:0;transform:scale(.2593);transform-origin:0 0"></iframe></div><div style="font:700 28px Pretendard;margin-top:16px">A 폴더</div></div>
+    <div style="text-align:center"><div style="width:280px;height:280px;border-radius:50%;overflow:hidden;box-shadow:0 0 0 1px #ddd"><iframe src="프로필.html#b" style="width:1080px;height:1080px;border:0;transform:scale(.2593);transform-origin:0 0"></iframe></div><div style="font:700 28px Pretendard;margin-top:16px">B 서랍</div></div>
+    <div style="text-align:center"><div style="width:280px;height:280px;border-radius:50%;overflow:hidden;box-shadow:0 0 0 1px #ddd"><iframe src="프로필.html#c" style="width:1080px;height:1080px;border:0;transform:scale(.2593);transform-origin:0 0"></iframe></div><div style="font:700 28px Pretendard;margin-top:16px">C 카드</div></div>
+  </div>
+</section>
+
+<script>
+const id=(location.hash||"#a").slice(1);
+(document.getElementById(id)||document.querySelector(".p")).classList.add("on");
+</script>
+</body></html>
