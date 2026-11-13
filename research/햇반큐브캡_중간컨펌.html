@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><title>햇반 큐브캡 중간 컨펌</title>
+<style>
+:root{--ink:#23262b;--sub:#5d6670;--line:#d7dce1;--pp:#dfe8ef;--ppS:#6f8496;--si:#2f8f7d;--siL:#d6eee8;--rice:#fffdf6;--bg:#f7f5f0;--acc:#d9534f}
+*{box-sizing:border-box;margin:0;padding:0}
+body{width:1400px;background:var(--bg);font-family:"Malgun Gothic","Apple SD Gothic Neo",sans-serif;color:var(--ink);padding:36px 40px 30px}
+header{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid var(--ink);padding-bottom:14px;margin-bottom:22px}
+h1{font-size:34px;letter-spacing:-1px}
+h1 small{font-size:16px;font-weight:600;color:#fff;background:var(--acc);padding:3px 10px;border-radius:4px;margin-left:10px;vertical-align:middle}
+.tag{font-size:17px;color:var(--sub);margin-top:6px}
+.meta{font-size:13px;color:var(--sub);text-align:right;line-height:1.6}
+.grid{display:grid;grid-template-columns:640px 1fr;gap:22px}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px 20px}
+.card h2{font-size:18px;margin-bottom:10px;display:flex;gap:8px;align-items:center}
+.card h2 b{background:var(--ink);color:#fff;border-radius:50%;width:24px;height:24px;font-size:13px;display:inline-flex;align-items:center;justify-content:center}
+svg text{font-family:"Malgun Gothic",sans-serif}
+.steps{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.step{text-align:center;font-size:13px;line-height:1.35}
+.step .n{width:30px;height:30px;border-radius:50%;background:var(--si);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 6px}
+.step.hl .n{background:var(--acc)}
+.step b{display:block;font-size:14px;margin-bottom:2px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{border-bottom:1px solid var(--line);padding:7px 6px;text-align:left}
+th{background:#f1f3f5;font-size:13px}
+.right{display:flex;flex-direction:column;gap:18px}
+.bottom{display:grid;grid-template-columns:640px 1fr;gap:22px;margin-top:18px}
+ul.pt{list-style:none;font-size:14.5px;line-height:1.75}
+ul.pt li:before{content:"✔ ";color:var(--si);font-weight:700}
+.note{font-size:12px;color:var(--sub);margin-top:14px}
+</style></head><body>
+<header>
+  <div>
+    <h1>햇반 큐브캡 (가칭)<small>중간 컨펌</small></h1>
+    <div class="tag">집에 있는 햇반 + 다회용 뚜껑 1개 + 맛 큐브 → 전자레인지 2분, 흔들면 카레·짜장·비빔·덮밥</div>
+  </div>
+  <div class="meta">햇반 30주년 '갓 지은 AI디어' · 주제 ① 미래의 햇반을 만들어밥<br>작성 2026-11-13 · 구조 설명용 도식 (최종 비주얼은 AI 이미지로 제작)</div>
+</header>
+
+<div class="grid">
+  <!-- 구조도 -->
+  <div class="card">
+    <h2><b>1</b>구조 (분해도)</h2>
+    <svg width="600" height="520" viewBox="0 0 600 520">
+      <defs>
+        <marker id="ar" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8z" fill="#9aa4ae"/></marker>
+      </defs>
+      <!-- cube -->
+      <g transform="translate(270,30)">
+        <rect x="0" y="0" width="56" height="56" rx="10" fill="#e8a33d" stroke="#a8711f" stroke-width="2"/>
+        <rect x="8" y="8" width="18" height="10" rx="4" fill="#f5c879" opacity=".8"/>
+      </g>
+      <line x1="298" y1="92" x2="298" y2="120" stroke="#9aa4ae" stroke-width="2" stroke-dasharray="4 4" marker-end="url(#ar)"/>
+      <!-- flip cap (open) -->
+      <g>
+        <rect x="262" y="128" width="72" height="22" rx="8" fill="var(--si)"/>
+        <path d="M334 139 q38 -6 46 -40" stroke="var(--si)" stroke-width="10" fill="none" stroke-linecap="round"/>
+      </g>
+      <!-- lid dome -->
+      <path d="M130 230 Q130 168 298 162 Q466 168 466 230 Z" fill="var(--pp)" stroke="var(--ppS)" stroke-width="2.5"/>
+      <rect x="262" y="150" width="72" height="16" rx="4" fill="#fff" stroke="var(--ppS)" stroke-width="2"/>
+      <rect x="120" y="226" width="356" height="16" rx="6" fill="var(--pp)" stroke="var(--ppS)" stroke-width="2.5"/>
+      <rect x="124" y="238" width="348" height="7" rx="3" fill="var(--si)"/>
+      <!-- clips -->
+      <path d="M118 232 h-14 v58 h18" fill="none" stroke="var(--ppS)" stroke-width="7" stroke-linecap="round"/>
+      <path d="M478 232 h14 v58 h-18" fill="none" stroke="var(--ppS)" stroke-width="7" stroke-linecap="round"/>
+      <!-- handle (unfolded) -->
+      <path d="M476 200 L560 200 Q578 200 578 218 L578 222 Q578 236 562 236 L476 236" fill="var(--si)" />
+      <rect x="500" y="208" width="60" height="18" rx="9" fill="var(--siL)"/>
+      <!-- folded ghost -->
+      <path d="M470 196 Q520 150 498 120" stroke="var(--si)" stroke-width="3" stroke-dasharray="5 5" fill="none"/>
+      <text x="503" y="112" font-size="12" fill="var(--sub)">전자레인지 안에선 접기</text>
+      <!-- container -->
+      <path d="M140 300 L456 300 L430 430 Q428 442 414 442 L182 442 Q168 442 166 430 Z" fill="#fff" stroke="#b9c2ca" stroke-width="2.5"/>
+      <path d="M150 300 L446 300 L440 330 L156 330 Z" fill="var(--rice)"/>
+      <g fill="#efe7d2">
+        <ellipse cx="200" cy="318" rx="7" ry="3.5"/><ellipse cx="240" cy="312" rx="7" ry="3.5"/><ellipse cx="290" cy="320" rx="7" ry="3.5"/><ellipse cx="340" cy="313" rx="7" ry="3.5"/><ellipse cx="390" cy="319" rx="7" ry="3.5"/>
+      </g>
+      <text x="298" y="385" text-anchor="middle" font-size="22" font-weight="700" fill="#c9ced3">기존 햇반 210g</text>
+      <text x="298" y="410" text-anchor="middle" font-size="13" fill="#9aa4ae">모양·크기 그대로</text>
+
+      <!-- labels -->
+      <g font-size="14" fill="var(--ink)">
+        <line x1="330" y1="58" x2="400" y2="58" stroke="#9aa4ae"/><text x="406" y="54" font-weight="700">맛 큐브</text><text x="406" y="72" font-size="12" fill="var(--sub)">상온 고형 · 맛별 따로</text>
+        <line x1="262" y1="139" x2="60" y2="139" stroke="#9aa4ae"/><text x="20" y="116" font-weight="700">플립 마개</text><text x="20" y="133" font-size="12" fill="var(--sub)">실리콘 · 3단 조절</text>
+        <line x1="170" y1="200" x2="60" y2="200" stroke="#9aa4ae"/><text x="20" y="190" font-weight="700">돔형 뚜껑</text><text x="20" y="215" font-size="12" fill="var(--sub)">PP · 다회용</text><text x="20" y="230" font-size="12" fill="var(--sub)">섞일 공간 확보</text>
+        <line x1="104" y1="270" x2="60" y2="270" stroke="#9aa4ae"/><text x="20" y="262" font-weight="700">클립 2개</text><text x="20" y="279" font-size="12" fill="var(--sub)">용기를 꽉 물기</text>
+        <line x1="476" y1="244" x2="520" y2="270" stroke="#9aa4ae"/><text x="490" y="290" font-weight="700">실리콘 패킹</text>
+        <text x="500" y="262" font-weight="700" fill="var(--si)"></text>
+        <line x1="560" y1="236" x2="560" y2="330" stroke="#9aa4ae"/><text x="500" y="350" font-weight="700">안 뜨거운 손잡이</text><text x="500" y="367" font-size="12" fill="var(--sub)">실리콘 · 접이식</text>
+      </g>
+      <!-- cube lineup -->
+      <g transform="translate(110,470)" font-size="13">
+        <rect x="0" y="0" width="30" height="30" rx="7" fill="#e8a33d"/><text x="38" y="20">카레</text>
+        <rect x="100" y="0" width="30" height="30" rx="7" fill="#5a3a22"/><text x="138" y="20">짜장</text>
+        <rect x="200" y="0" width="30" height="30" rx="7" fill="#c8442f"/><text x="238" y="20">비빔</text>
+        <rect x="300" y="0" width="30" height="30" rx="7" fill="#9b7445"/><text x="338" y="20">불고기 덮밥</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="right">
+    <!-- flip 3 states -->
+    <div class="card">
+      <h2><b>2</b>플립 마개 3단</h2>
+      <svg width="680" height="170" viewBox="0 0 680 170">
+        <g font-size="14" text-anchor="middle">
+          <!-- open -->
+          <g transform="translate(40,20)">
+            <path d="M0 90 Q0 60 90 56 Q180 60 180 90Z" fill="var(--pp)" stroke="var(--ppS)" stroke-width="2"/>
+            <rect x="60" y="42" width="60" height="16" rx="4" fill="#fff" stroke="var(--ppS)" stroke-width="2"/>
+            <path d="M120 50 q30 -4 36 -38" stroke="var(--si)" stroke-width="9" fill="none" stroke-linecap="round"/>
+            <rect x="74" y="4" width="32" height="32" rx="7" fill="#e8a33d"/>
+            <path d="M90 36 v6" stroke="#9aa4ae" stroke-width="2"/>
+            <text x="90" y="122" font-weight="700">① 완전 열림</text><text x="90" y="142" fill="var(--sub)" font-size="13">큐브 넣기</text>
+          </g>
+          <!-- half -->
+          <g transform="translate(250,20)">
+            <path d="M0 90 Q0 60 90 56 Q180 60 180 90Z" fill="var(--pp)" stroke="var(--ppS)" stroke-width="2"/>
+            <rect x="60" y="42" width="60" height="16" rx="4" fill="#fff" stroke="var(--ppS)" stroke-width="2"/>
+            <path d="M62 40 L122 30" stroke="var(--si)" stroke-width="9" stroke-linecap="round"/>
+            <g stroke="#9aa4ae" stroke-width="2.5" fill="none" stroke-linecap="round">
+              <path d="M70 26 q-6 -8 0 -16 q6 -8 0 -16"/><path d="M86 22 q-6 -8 0 -16 q6 -8 0 -16"/>
+            </g>
+            <text x="90" y="122" font-weight="700">② 반 열림</text><text x="90" y="142" fill="var(--sub)" font-size="13">전자레인지 2분 · 김 빼기</text>
+          </g>
+          <!-- closed -->
+          <g transform="translate(460,20)">
+            <path d="M0 90 Q0 60 90 56 Q180 60 180 90Z" fill="var(--pp)" stroke="var(--ppS)" stroke-width="2"/>
+            <rect x="60" y="42" width="60" height="16" rx="4" fill="var(--si)"/>
+            <g stroke="var(--acc)" stroke-width="3" fill="none" stroke-linecap="round">
+              <path d="M-8 40 q-10 20 0 40"/><path d="M188 40 q10 20 0 40"/><path d="M-18 34 q-12 26 0 52"/><path d="M198 34 q12 26 0 52"/>
+            </g>
+            <text x="90" y="122" font-weight="700">③ 꾹 닫힘</text><text x="90" y="142" fill="var(--sub)" font-size="13">손잡이 잡고 흔들기</text>
+          </g>
+        </g>
+      </svg>
+    </div>
+
+    <div class="card">
+      <h2><b>3</b>사용 순서</h2>
+      <div class="steps">
+        <div class="step"><div class="n">1</div><b>필름 뜯기</b>기존 햇반 그대로</div>
+        <div class="step"><div class="n">2</div><b>뚜껑 딸깍</b>클립으로 결속</div>
+        <div class="step"><div class="n">3</div><b>큐브 투입</b>마개 완전 열림</div>
+        <div class="step"><div class="n">4</div><b>2분 데우기</b>마개 반 열림</div>
+        <div class="step hl"><div class="n">5</div><b>흔들기</b>손잡이 펼치고 꾹 닫고</div>
+        <div class="step"><div class="n">6</div><b>완성</b>카레·짜장·비빔·덮밥</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><b>4</b>소재</h2>
+      <table>
+        <tr><th>부분</th><th>소재</th><th>이유</th></tr>
+        <tr><td>뚜껑 본체·클립</td><td>전자레인지용 PP</td><td>단단해서 흔들어도 안 휨</td></tr>
+        <tr><td>플립 마개·테두리 패킹</td><td>실리콘</td><td>잘 휘고 밀폐 잘 됨</td></tr>
+        <tr><td>손잡이</td><td>실리콘 (PP 심 + 실리콘 커버)</td><td>안 뜨거움, 접이식</td></tr>
+        <tr><td>큐브</td><td>상온 고형 소스</td><td>냉동 보관 불필요</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="bottom">
+  <div class="card">
+    <h2><b>5</b>보관 부피 비교 (6끼 기준, 개념도)</h2>
+    <svg width="600" height="190" viewBox="0 0 600 190">
+      <g font-size="14">
+        <text x="20" y="20" font-weight="700">기존 컵밥 6개</text>
+        <g fill="#f3e6d3" stroke="#c9b28f" stroke-width="2">
+          <rect x="20" y="34" width="70" height="66" rx="6"/><rect x="96" y="34" width="70" height="66" rx="6"/><rect x="172" y="34" width="70" height="66" rx="6"/>
+          <rect x="20" y="106" width="70" height="66" rx="6"/><rect x="96" y="106" width="70" height="66" rx="6"/><rect x="172" y="106" width="70" height="66" rx="6"/>
+        </g>
+        <text x="290" y="110" font-size="30" font-weight="700" fill="var(--acc)">→</text>
+        <text x="340" y="20" font-weight="700">햇반 6개(이미 집에 있음) + 큐브 6개</text>
+        <g fill="#fff" stroke="#b9c2ca" stroke-width="2">
+          <rect x="340" y="40" width="70" height="30" rx="5"/><rect x="416" y="40" width="70" height="30" rx="5"/><rect x="492" y="40" width="70" height="30" rx="5"/>
+          <rect x="340" y="76" width="70" height="30" rx="5"/><rect x="416" y="76" width="70" height="30" rx="5"/><rect x="492" y="76" width="70" height="30" rx="5"/>
+        </g>
+        <g>
+          <rect x="340" y="124" width="22" height="22" rx="5" fill="#e8a33d"/><rect x="368" y="124" width="22" height="22" rx="5" fill="#5a3a22"/><rect x="396" y="124" width="22" height="22" rx="5" fill="#c8442f"/>
+          <rect x="424" y="124" width="22" height="22" rx="5" fill="#9b7445"/><rect x="452" y="124" width="22" height="22" rx="5" fill="#e8a33d"/><rect x="480" y="124" width="22" height="22" rx="5" fill="#c8442f"/>
+          <text x="512" y="141" font-size="13" fill="var(--sub)">한 줌</text>
+        </g>
+        <text x="340" y="176" font-size="12" fill="var(--sub)">+ 다회용 뚜껑 1개</text>
+      </g>
+    </svg>
+  </div>
+  <div class="card">
+    <h2><b>6</b>차별점 (출품작 593개 대비)</h2>
+    <ul class="pt">
+      <li>뚜껑은 한 번 사고 큐브만 계속 사는 구조: 면도기·면도날 모델</li>
+      <li>새 밥 제품 없이 집에 있는 기존 햇반을 그대로 씀</li>
+      <li>컵밥보다 보관 부피가 작고, 소스 봉지 쓰레기도 없음</li>
+      <li>계량할 필요 없이 손 안 대고 흔들기만 하면 끝 (안 뜨거운 손잡이)</li>
+      <li>비슷한 출품: 뚜껑 속 맛 캡슐 3건 → 다회용·부피 절감 구조는 없음</li>
+    </ul>
+    <div class="note">※ 볶음밥 식감은 전자레인지로 안 나와서 카레·짜장·비빔·덮밥 중심. 소재 내열 수치는 미확인.</div>
+  </div>
+</div>
+</body></html>
