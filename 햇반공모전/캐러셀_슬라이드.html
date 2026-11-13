@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><title>햇뚜 캐러셀</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<style>
+:root{--red:#c71c22;--ink:#141414;--sub:#555}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#ddd;font-family:Pretendard,"Malgun Gothic",sans-serif;color:var(--ink)}
+.slide{width:1080px;height:1350px;position:relative;overflow:hidden;display:none;
+  background:radial-gradient(ellipse at 50% 42%,#ffffff 0%,#ffffff 55%,#f1f1f1 100%)}
+.slide.on{display:block}
+.logo{position:absolute;left:48px;top:40px;width:220px;height:110px;overflow:hidden}
+.logo img{position:absolute;left:-58px;top:-48px;width:1080px;height:1080px}
+.h-light{font-weight:400;letter-spacing:-2px}
+.h-bold{font-weight:800;letter-spacing:-2.5px}
+.box{display:inline-block;background:var(--red);color:#fff;font-weight:800;padding:4px 22px 10px;letter-spacing:-2px;box-shadow:0 14px 30px rgba(199,28,34,.25)}
+.center{position:absolute;left:0;right:0;text-align:center}
+/* bubbles */
+.bubbles{position:absolute;left:110px;right:110px;display:flex;flex-direction:column;gap:30px}
+.b{position:relative;display:inline-block;font-size:40px;font-weight:600;letter-spacing:-1px;padding:26px 46px;border-radius:46px;max-width:720px;box-shadow:0 12px 28px rgba(0,0,0,.10)}
+.b.w{background:#fff;border:2.5px solid #222;align-self:flex-start}
+.b.r{background:var(--red);color:#fff;align-self:flex-end;font-weight:700}
+.b.w:after{content:"";position:absolute;left:-14px;bottom:4px;border:14px solid transparent;border-right:22px solid #222;border-bottom:0;transform:skewY(-20deg)}
+.b.r:after{content:"";position:absolute;right:-16px;bottom:4px;border:14px solid transparent;border-left:22px solid var(--red);border-bottom:0;transform:skewY(20deg)}
+.list{position:absolute;left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:26px}
+.li{font-size:40px;letter-spacing:-1px;display:flex;align-items:center;gap:18px}
+.li i{font-style:normal;width:48px;height:48px;border-radius:50%;background:var(--red);color:#fff;font-weight:800;font-size:28px;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 14px rgba(199,28,34,.3)}
+.li b{font-weight:800}
+.board{position:absolute;left:110px;right:110px;top:640px;background:#fff;border-radius:18px;box-shadow:0 22px 50px rgba(0,0,0,.14);overflow:hidden}
+.board img{width:100%;display:block}
+.cap{font-size:20px;color:#888;letter-spacing:0}
+</style></head><body>
+
+<!-- 02 공감 -->
+<section class="slide" id="s02">
+  <div class="logo"><img src="참고이미지/햇반30로고.png"></div>
+  <div class="center" style="top:250px">
+    <div class="h-light" style="font-size:78px">오늘 저녁,</div>
+    <div class="h-bold" style="font-size:96px;margin-top:6px">뭐 먹지?</div>
+  </div>
+  <div class="bubbles" style="top:600px">
+    <div class="b w">오늘 저녁 뭐 먹을까?</div>
+    <div class="b r">카레 어때?</div>
+    <div class="b r">난 짜장 먹고 싶은데!</div>
+    <div class="b w">그럼 컵밥 종류별로 사 둘까?</div>
+  </div>
+</section>
+
+<!-- 04 전환 -->
+<section class="slide" id="s04">
+  <div class="logo"><img src="참고이미지/햇반30로고.png"></div>
+  <div class="center" style="top:470px">
+    <div class="h-light" style="font-size:66px;line-height:1.45">밥은 이미<br>집에 있잖아요.</div>
+    <div class="h-bold" style="font-size:84px;margin-top:40px">필요한 건</div>
+    <div style="margin-top:18px"><span class="box" style="font-size:92px">맛 한 알이니까</span></div>
+  </div>
+</section>
+
+<!-- 10 반론 -> 답 -->
+<section class="slide" id="s10">
+  <div class="logo"><img src="참고이미지/햇반30로고.png"></div>
+  <div class="center" style="top:200px">
+    <div class="h-bold" style="font-size:84px">그런데, 잠깐…</div>
+  </div>
+  <div class="bubbles" style="top:380px">
+    <div class="b r" style="align-self:flex-start">그냥 소스 부으면 되지 않나요?</div>
+    <div class="b w" style="align-self:flex-end">뚜껑을 또 사야 해요?</div>
+  </div>
+  <div class="center" style="top:700px">
+    <span class="box" style="font-size:70px">뚜껑은 한 번, 양념만 바꾸면 끝</span>
+  </div>
+  <div class="list" style="top:880px">
+    <div class="li"><i>1</i>계량할 필요 없이 <b>한 알 톡</b></div>
+    <div class="li"><i>2</i>손 안 대고 <b>양쪽 손잡이로 흔들기</b></div>
+    <div class="li"><i>3</i>컵밥보다 <b>훨씬 작은 보관 부피</b></div>
+  </div>
+</section>
+
+<!-- 12 마무리 + 제작 과정 -->
+<section class="slide" id="s12">
+  <div class="logo"><img src="참고이미지/햇반30로고.png"></div>
+  <div class="center" style="top:230px">
+    <div class="h-light" style="font-size:76px">오늘 저녁은,</div>
+    <div style="margin-top:20px"><span class="box" style="font-size:90px">흔들어서 정할게요</span></div>
+  </div>
+  <div class="center" style="top:560px">
+    <div class="h-bold" style="font-size:40px;letter-spacing:-1px">제작 과정</div>
+    <div style="font-size:30px;color:var(--sub);margin-top:10px;letter-spacing:-.5px">① 아이디어 정리 &nbsp;→&nbsp; ② 구조 보드 제작 &nbsp;→&nbsp; ③ GPT로 이미지 생성</div>
+  </div>
+  <div class="board" style="top:680px"><img src="햇반큐브캡_중간컨펌.png"></div>
+  <div class="center" style="top:1250px"><span class="cap">햇반 30주년 '갓 지은 AI디어' 공모전 출품작 · AI로 제작한 가상의 제품 콘셉트입니다</span></div>
+</section>
+
+<script>
+const id = (location.hash || "#s02").slice(1);
+(document.getElementById(id) || document.querySelector(".slide")).classList.add("on");
+</script>
+</body></html>
