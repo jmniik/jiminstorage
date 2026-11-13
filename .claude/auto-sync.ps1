@@ -1,6 +1,7 @@
 # llm-local -> GitHub (jiminstorage) auto sync
 # Runs from: Claude Code hook (after Claude edits) + Windows Task Scheduler (every 10 min)
 # Log: %LOCALAPPDATA%\llm-local-sync.log
+# Turn off: delete the hook in .claude/settings.json and the "llm-local auto-sync" scheduled task
 
 $ErrorActionPreference = 'Continue'
 $repo = Split-Path -Parent $PSScriptRoot
