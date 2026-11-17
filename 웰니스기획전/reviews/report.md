@@ -1,6 +1,6 @@
 # 옛 전남도청 · 전일빌딩245 리뷰 인사이트
 
-- 대상: `AXC_team5/김지민/웰니스기획전/` 의 리뷰 CSV 2개 (각 50건)
+- 대상: `웰니스기획전/reviews/` 의 리뷰 CSV 2개 (각 50건) — dochungreviews.csv(옛 전남도청), jeonilreviews.csv(전일빌딩245)
 - 근거 표기: 두 파일 번호가 각각 1번부터 시작해서 **도청 #n**, **전일 #n** 으로 나눠 적음
 - 작성일: 2026-11-17
 
@@ -127,8 +127,8 @@
 
 | 사이트 | 주소 | 확인한 날짜 |
 |---|---|---|
-| GitHub 팀 레포 AXC_team5 (광주_옛전남도청_리뷰.csv) | 김지민/웰니스기획전/광주_옛전남도청_리뷰.csv | 2026-11-17 |
-| GitHub 팀 레포 AXC_team5 (광주_전일빌딩245_리뷰.csv) | 김지민/웰니스기획전/광주_전일빌딩245_리뷰.csv | 2026-11-17 |
+| 옛 전남도청 리뷰 CSV (dochungreviews.csv) | 웰니스기획전/reviews/dochungreviews.csv | 2026-11-17 |
+| 전일빌딩245 리뷰 CSV (jeonilreviews.csv) | 웰니스기획전/reviews/jeonilreviews.csv | 2026-11-17 |
 | 네이버지도 (옛 전남도청 본관) | https://pcmap.place.naver.com/place/2031595840/review/visitor | 2026-11-16 |
 | 카카오맵 (옛전남도청) | https://place.map.kakao.com/777465572 | 2026-11-16 |
 | 카카오맵 (옛전남도청 회의실) | https://place.map.kakao.com/12735888 | 2026-11-16 |
