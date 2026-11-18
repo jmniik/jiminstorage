@@ -6,7 +6,7 @@
 |---|---|---|
 | v1 | 팀 레포 맨 위 `inventory/inventory-v1.csv` | 김주연, be121cf |
 | v2 | `김지민/inventory/inventory-v2.csv` | 김지민, 6123eac |
-| v3 | `김지민/inventory/inventory-v3.csv` | 김지민 (이번에 만듦) |
+| v3 | 팀 레포 맨 위 `inventory/inventory-v3.csv` | 김지민 (이번에 만듦) |
 
 ## 1. v1과 v2의 차이
 
