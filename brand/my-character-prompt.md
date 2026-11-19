@@ -24,7 +24,7 @@
 |---|---|
 | 등신 | 1등신. 몸 전체가 동그란 공 하나다 |
 | 몸 | 크림 아이보리색의 말랑한 공 모양. 매끈하고 무늬가 없다 |
-| 얼굴 | 작다. 폭탄 모자가 잘 보이게 몸 아래쪽 절반에 모여 있다. 작은 까만 점 눈 2개, 짧게 웃는 입, 옅은 볼터치 |
+| 얼굴 | 작다. 폭탄 모자가 잘 보이게 몸 아래쪽 절반에 모여 있다. 눈썹은 없다. 눈만 크게: 크고 동그란 까만 눈 2개(흰 반짝임 1개씩). 짧게 웃는 입, 옅은 볼터치 |
 | 팔 | 몸 양옆에 붙은 작고 짧은 동그란 팔. 손가락 없음 |
 | 발 | 팔보다 확실히 큰 잔디 초록색 동그란 발 2개. 몸 아래에 붙어 있다 |
 | 폭탄 모자 | 머리(몸 위쪽)에 쓴 폭탄 모양 모자. 검정 반구 모양이고 몸 크기의 절반쯤으로 크게 보인다. 모자 아래 둘레에 잔디 초록 띠 1줄 |
@@ -56,7 +56,7 @@
 여섯 그림 모두 옷·색·소품이 똑같아야 한다. 크기 비율도 같게.
 
 [캐릭터] 이름 '충동이'. 1등신 캐릭터로, 몸 전체가 크림 아이보리색(#FFF1DC) 동그란 공 하나다.
-얼굴은 작게, 몸 아래쪽 절반에 작은 까만 점 눈 2개, 짧게 웃는 입, 옅은 볼터치.
+얼굴은 작게, 몸 아래쪽 절반에 둔다. 눈썹은 없고 눈만 크게: 크고 동그란 까만 눈 2개(흰 반짝임 1개씩), 짧게 웃는 입, 옅은 볼터치.
 몸 양옆에 작고 짧은 동그란 팔(손가락 없음), 몸 아래에 팔보다 훨씬 큰 잔디 초록(#6DBE5A) 동그란 발 2개.
 머리 위에 검정(#22232A) 반구 모양 폭탄 모자를 쓰고 있다. 모자는 몸 절반 크기로 크고, 아래 둘레에 잔디 초록 띠 1줄.
 모자 꼭대기에서 짧고 꼬불한 심지가 나오고, 끝에 작은 별 모양 주황(#FF8A3D) 불꽃.
@@ -66,7 +66,7 @@
 대표색은 검정·크림 아이보리·잔디 초록 세 가지, 주황은 불꽃에만 아주 작게.
 
 [금지] 실제 사람이나 이미 있는 캐릭터를 닮지 않게 할 것.
-분홍색 몸, 크고 긴 파란 눈, 버섯 갓·점무늬 모자, 태엽 열쇠, 몸 전체가 폭탄인 모양은 넣지 말 것.
+눈썹, 분홍색 몸, 세로로 긴 파란 눈(눈은 동그란 까만 눈), 버섯 갓·점무늬 모자, 태엽 열쇠, 몸 전체가 폭탄인 모양은 넣지 말 것.
 글자 로고, 배경 풍경, 추가 소품은 넣지 말 것.
 ```
 
@@ -80,7 +80,7 @@ Draw a character turnaround sheet of the character below as ONE wide horizontal 
 All six views must have exactly the same outfit, colors and props, at a consistent scale.
 
 [Character] Name: "Chungdong-i". A one-head-tall (chibi, 1:1) character whose whole body is a single round ball in cream ivory (#FFF1DC).
-A small face on the lower half of the body: two tiny black dot eyes, a short smiling mouth, faint blush.
+A small face on the lower half of the body. No eyebrows; only the eyes are big: two large round black eyes with one white highlight each, a short smiling mouth, faint blush.
 Tiny short round arms on both sides (no fingers). Two round feet in grass green (#6DBE5A), clearly bigger than the arms, attached under the body.
 On top of the head it wears a black (#22232A) half-dome bomb-shaped hat, about half the size of the body, with one grass-green band around its bottom edge.
 A short curly fuse comes out of the top of the hat, ending in a small star-shaped orange (#FF8A3D) spark.
@@ -90,7 +90,7 @@ Playful, cheerful expression.
 Main colors: black, cream ivory, grass green only; orange only as a tiny spark.
 
 [Do not] Do not resemble any real person or any existing character.
-No pink body, no large tall blue eyes, no mushroom cap or spotted hat, no wind-up key, the body must not be a bomb itself.
+No eyebrows, no pink body, no tall oval blue eyes (the eyes are round and black), no mushroom cap or spotted hat, no wind-up key, the body must not be a bomb itself.
 No text logos, no background scenery, no extra props.
 ```
 
