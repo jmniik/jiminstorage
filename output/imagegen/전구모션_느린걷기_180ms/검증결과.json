@@ -1,0 +1,44 @@
+[
+  {
+    "file": "노랑_모션.gif",
+    "frames": 8,
+    "frame_ms": 180,
+    "loop_ms": 1440,
+    "pixels_unchanged": true
+  },
+  {
+    "file": "다섯색상_미리보기.gif",
+    "frames": 8,
+    "frame_ms": 180,
+    "loop_ms": 1440,
+    "pixels_unchanged": true
+  },
+  {
+    "file": "빨강_모션.gif",
+    "frames": 8,
+    "frame_ms": 180,
+    "loop_ms": 1440,
+    "pixels_unchanged": true
+  },
+  {
+    "file": "초록_모션.gif",
+    "frames": 8,
+    "frame_ms": 180,
+    "loop_ms": 1440,
+    "pixels_unchanged": true
+  },
+  {
+    "file": "파랑_모션.gif",
+    "frames": 8,
+    "frame_ms": 180,
+    "loop_ms": 1440,
+    "pixels_unchanged": true
+  },
+  {
+    "file": "흰색_모션.gif",
+    "frames": 8,
+    "frame_ms": 180,
+    "loop_ms": 1440,
+    "pixels_unchanged": true
+  }
+]
