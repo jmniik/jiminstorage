@@ -76,7 +76,7 @@ function measure(n,img){
 
 /* ===== 걷기: 스크롤할 때만 ===== */
 let lastY=scrollY,phase=0,amp=0,lastMove=-1e9;
-addEventListener('scroll',()=>{const dy=scrollY-lastY;lastY=scrollY;phase+=Math.abs(dy)*.045;lastMove=performance.now()},{passive:true});
+addEventListener('scroll',()=>{const dy=scrollY-lastY;lastY=scrollY;phase+=Math.abs(dy)*.03;lastMove=performance.now()},{passive:true});
 
 // 정면 걷기: 앞으로 나온 쪽은 크고 아래, 뒤로 간 쪽은 작고 위
 function drawWalker(n,cx,baseY,dispH,alpha){
@@ -153,7 +153,7 @@ function buildWorld(){
   WORLD=[];const warm=[[110,80,140],[150,90,110],[80,110,150],[170,110,90],[90,130,130]];
   SCENES.forEach((sc,i)=>{
     const c=i*STEP;
-    for(let a=-46;a<=22;a+=6){
+    for(let a=-46;a<=22;a+=11){
       for(const side of [-1,1])for(let n=0;n<2;n++){
         const r=hash(i*7+n*3+side,a*13), seed=(r*1e6)|0;
         const lam=side*(n?30+r*22:15+r*9);
