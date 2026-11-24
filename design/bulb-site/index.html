@@ -59,52 +59,24 @@ function weights(p){
   const t=w.reduce((a,b)=>a+b,0);return w.map(v=>v/t);
 }
 
-/* ===== 스프라이트 ===== */
+/* ===== 스프라이트: 걷기 8프레임 (노란 전구 움짤 + 시트 색·얼굴) ===== */
+const FR={n:8,w:360,h:425,foot:396,body:381,idle:2};   // 프레임 크기, 발바닥 y, 몸 높이, 멈췄을 때 프레임
 const SPR={};
-SCENES.forEach(s=>{const i=new Image();i.src=`img/${s.spr}-front.png`;i.onload=()=>measure(s.spr,i);SPR[s.spr]=i});
-const CUT={};
-// 몸 바깥 테두리를 재서 팔 자를 위치를 잡음
-function measure(n,img){
-  const c=document.createElement('canvas');c.width=img.naturalWidth;c.height=img.naturalHeight;
-  const x=c.getContext('2d');x.drawImage(img,0,0);
-  const w=c.width,h=c.height,d=x.getImageData(0,0,w,h).data;
-  let x0=w,x1=0;
-  for(let y=h*.76|0;y<h*.83;y++)for(let xx=0;xx<w;xx++)if(d[(y*w+xx)*4+3]>40){x0=Math.min(x0,xx);x1=Math.max(x1,xx)}
-  const bwid=x1-x0;
-  CUT[n]={aT:h*.755|0,fY:h*.84|0,aL:x0+bwid*.185|0,aR:x1-bwid*.185|0,mid:(x0+x1)/2|0};
-}
+SCENES.forEach(s=>{const i=new Image();i.src=`img/${s.spr}-walk.png`;SPR[s.spr]=i});
 
-/* ===== 걷기: 스크롤할 때만 ===== */
+/* ===== 걷기: 스크롤할 때만 프레임이 넘어감 ===== */
 let lastY=scrollY,phase=0,amp=0,lastMove=-1e9;
 addEventListener('scroll',()=>{const dy=scrollY-lastY;lastY=scrollY;phase+=Math.abs(dy)*.03;lastMove=performance.now()},{passive:true});
 
-// 정면 걷기: 앞으로 나온 쪽은 크고 아래, 뒤로 간 쪽은 작고 위
 function drawWalker(n,cx,baseY,dispH,alpha){
-  const img=SPR[n],c=CUT[n];if(!c||alpha<=0)return;
-  const w=img.naturalWidth,h=img.naturalHeight,k=dispH/h;
-  const s=Math.sin(phase)*amp, cs=Math.cos(phase)*amp;
-  const bob=-(Math.abs(cs))*h*.025;            // 발이 모일 때 몸이 살짝 올라감
+  const img=SPR[n];if(!img.complete||!img.naturalWidth||alpha<=0)return;
+  const k=dispH/FR.body;
+  // 스크롤 중이면 phase로 프레임 선택(한 걸음 사이클 = 8프레임), 멈추면 서 있는 프레임
+  const f=amp>.5?Math.floor(phase/(Math.PI*2)*FR.n)%FR.n:FR.idle;
   ctx.save();ctx.globalAlpha=alpha;ctx.imageSmoothingEnabled=false;
   ctx.fillStyle='rgba(0,0,0,.25)';ctx.beginPath();ctx.ellipse(cx*dpr,baseY*dpr,dispH*.34*dpr,dispH*.045*dpr,0,0,7);ctx.fill();
-  ctx.translate(cx*dpr,baseY*dpr);ctx.rotate(s*.035);ctx.scale(k*dpr,k*dpr);ctx.translate(-c.mid,-h);
-  // f: +1 앞 / -1 뒤
-  const part=(sx,sy,pw,ph,f,dy)=>{
-    if(pw<=0||ph<=0)return;const sc=1+.16*f;
-    const cx0=sx+pw/2,cy0=sy+ph/2;
-    ctx.drawImage(img,sx,sy,pw,ph,Math.round(cx0-pw*sc/2),Math.round(cy0-ph*sc/2+f*h*.018+dy),Math.round(pw*sc),Math.round(ph*sc));
-  };
-  const body=()=>{
-    ctx.drawImage(img,0,0,w,c.aT+1,0,Math.round(bob),w,c.aT+1);
-    ctx.drawImage(img,c.aL,c.aT,c.aR-c.aL,c.fY-c.aT+1,c.aL,c.aT+Math.round(bob),c.aR-c.aL,c.fY-c.aT+1);
-  };
-  const armL=()=>part(0,c.aT,c.aL,c.fY-c.aT,-s,bob), armR=()=>part(c.aR,c.aT,w-c.aR,c.fY-c.aT,s,bob);
-  const liftL=-Math.max(0,cs)*h*.03, liftR=-Math.max(0,-cs)*h*.03;   // 앞으로 내딛는 발이 들림
-  const footL=()=>part(0,c.fY,c.mid,h-c.fY,s,liftL), footR=()=>part(c.mid,c.fY,w-c.mid,h-c.fY,-s,liftR);
-  // 뒤에 있는 것 먼저 → 몸 → 앞에 있는 것 (왼발이 앞이면 오른팔이 앞)
-  const back=[],front=[];
-  (s>=0?front:back).push(footL);(s>=0?back:front).push(footR);
-  (s>=0?front:back).push(armR);(s>=0?back:front).push(armL);
-  back.forEach(f=>f());body();front.forEach(f=>f());
+  const dw=FR.w*k,dh2=FR.h*k;
+  ctx.drawImage(img,f*FR.w,0,FR.w,FR.h,Math.round((cx-dw/2)*dpr),Math.round((baseY-FR.foot*k)*dpr),Math.round(dw*dpr),Math.round(dh2*dpr));
   ctx.restore();
 }
 
