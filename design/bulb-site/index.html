@@ -55,7 +55,6 @@ const SCENES=[
 ];
 const STEP=72;                                 // 장면마다 행성 72°씩
 // 스크롤 0~1 → 장면 위치 0~4 (장면 i는 i/4 지점에서 정중앙)
-const sceneW=(p,i)=>{const s=p*4;return Math.max(0,1-Math.abs(s-i)/.5)>=.5?Math.min(1,(1-Math.abs(s-i)/.5)*2-0):0};
 function weights(p){
   const s=p*4,w=SCENES.map((_,i)=>{const d=Math.abs(s-i);return d<.38?1:d>.62?0:1-sm(.38,.62,d)});
   const t=w.reduce((a,b)=>a+b,0);return w.map(v=>v/t);
