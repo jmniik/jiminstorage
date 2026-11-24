@@ -49,7 +49,7 @@ const D=Math.PI/180;
 const SCENES=[
   {spr:'white', glow:null,          cap:['회색 도시','밤 · 흰 전구'],                 dot:'#cfcfd8'},
   {spr:'red',   glow:[255,80,80],   cap:['빨간 전구','음식점 거리'],                   dot:'#ff4a4a'},
-  {spr:'green', glow:[100,255,100], cap:['초록 전구','ACC'],                          dot:'#56e04a'},
+  {spr:'green', glow:[100,255,100], cap:['초록 전구','ACC · 하늘마당'],                          dot:'#56e04a'},
   {spr:'blue',  glow:[70,170,255],  cap:['파란 전구','구도청 · 전일빌딩'],              dot:'#3aa5ff'},
   {spr:'yellow',glow:[255,210,100], cap:['노란 전구','노을 · ACC · 전일빌딩'],          dot:'#f5b942'},
 ];
@@ -92,14 +92,14 @@ function drawWalker(n,cx,baseY,dispH,alpha){
   const part=(sx,sy,pw,ph,f,dy)=>{
     if(pw<=0||ph<=0)return;const sc=1+.16*f;
     const cx0=sx+pw/2,cy0=sy+ph/2;
-    ctx.drawImage(img,sx,sy,pw,ph,Math.round(cx0-pw*sc/2),Math.round(cy0-ph*sc/2+f*h*.035+dy),Math.round(pw*sc),Math.round(ph*sc));
+    ctx.drawImage(img,sx,sy,pw,ph,Math.round(cx0-pw*sc/2),Math.round(cy0-ph*sc/2+f*h*.018+dy),Math.round(pw*sc),Math.round(ph*sc));
   };
   const body=()=>{
     ctx.drawImage(img,0,0,w,c.aT+1,0,Math.round(bob),w,c.aT+1);
     ctx.drawImage(img,c.aL,c.aT,c.aR-c.aL,c.fY-c.aT+1,c.aL,c.aT+Math.round(bob),c.aR-c.aL,c.fY-c.aT+1);
   };
   const armL=()=>part(0,c.aT,c.aL,c.fY-c.aT,-s,bob), armR=()=>part(c.aR,c.aT,w-c.aR,c.fY-c.aT,s,bob);
-  const liftL=-Math.max(0,cs)*h*.05, liftR=-Math.max(0,-cs)*h*.05;   // 앞으로 내딛는 발이 들림
+  const liftL=-Math.max(0,cs)*h*.03, liftR=-Math.max(0,-cs)*h*.03;   // 앞으로 내딛는 발이 들림
   const footL=()=>part(0,c.fY,c.mid,h-c.fY,s,liftL), footR=()=>part(c.mid,c.fY,w-c.mid,h-c.fY,-s,liftR);
   // 뒤에 있는 것 먼저 → 몸 → 앞에 있는 것 (왼발이 앞이면 오른팔이 앞)
   const back=[],front=[];
@@ -129,6 +129,13 @@ const ACC=()=>spr(46,16,(x,w,h)=>{
   for(let y=5;y<h;y+=3)for(let i=1;i<w-1;i+=2){x.fillStyle=hash(i,y)<.55?'#ffe08a':'#6fb6d6';x.fillRect(i,y,1,2)}
   x.fillStyle='#4f9a4a';x.fillRect(0,1,w,2);for(let i=1;i<w;i+=5){x.fillStyle='#7ccc60';x.fillRect(i,0,3,1)}
 });
+const SKYGARDEN=()=>spr(40,10,(x,w,h)=>{          // 하늘마당: ACC 위 잔디 광장
+  x.fillStyle='#3f7d3a';x.fillRect(0,4,w,h-4);
+  x.fillStyle='#69b84f';x.fillRect(1,3,w-2,2);
+  for(let i=2;i<w-2;i+=3){x.fillStyle=hash(i,7)<.5?'#8fd46a':'#57a043';x.fillRect(i,2,1,1)}
+  for(const tx of [5,w-8]){x.fillStyle='#6b4a2e';x.fillRect(tx+1,0,1,4);x.fillStyle='#2f8a3a';x.fillRect(tx,0,3,2)}
+  x.fillStyle='#b9d9e6';for(let i=6;i<w-6;i+=8)x.fillRect(i,6,4,2);   // 아래 유리 채광창
+});
 const GUDO=()=>spr(26,14,(x,w,h)=>{              // 구도청(옛 전남도청): 흰 3층
   x.fillStyle='#8a6a58';x.fillRect(0,0,w,2);
   x.fillStyle='#efe9dc';x.fillRect(1,2,w-2,h-2);
@@ -141,24 +148,28 @@ const JEONIL=()=>spr(15,44,(x,w,h)=>{             // 전일빌딩245: 높은 격
   for(let y=5;y<h-2;y+=4)for(let i=2;i<w-3;i+=3){x.fillStyle=hash(i,y)<.55?'#ffd36a':'#7a8696';x.fillRect(i,y,2,2)}
 });
 
-// 행성 둘레에 건물 배치 (각도 θ: 장면 i 중심 = i*72°)
+// 행성 위 건물 배치: th = 앞뒤 각도(장면 i 중심 = i*72°), lam = 좌우 각도
 let WORLD=[];
 function buildWorld(){
   WORLD=[];const warm=[[110,80,140],[150,90,110],[80,110,150],[170,110,90],[90,130,130]];
   SCENES.forEach((sc,i)=>{
     const c=i*STEP;
-    for(let a=-32;a<=32;a+=4+hash(i,a)*3){
-      if(Math.abs(a)<6)continue;                 // 전구 바로 밑은 비움
-      const r=hash(i*7,a*13), seed=(r*1e6)|0;
-      let s;
-      if(i===0){const v=60+r*35;s=tower(7+(r*8|0),14+(hash(a,i)*26|0),[v,v,v+5],.12,rgb([v*1.4,v*1.4,v*1.45]),seed)}
-      else if(i===1){s=shop(10+(r*5|0),14+(hash(a,i)*8|0),warm[seed%5],['#e84a4a','#f08a2a','#d94a7a'][seed%3],seed)}
-      else s=tower(7+(r*7|0),12+(hash(a,i)*22|0),warm[seed%5],.55,'#ffe08a',seed);
-      WORLD.push({a:c+a,s,back:true});
+    for(let a=-46;a<=22;a+=6){
+      for(const side of [-1,1])for(let n=0;n<2;n++){
+        const r=hash(i*7+n*3+side,a*13), seed=(r*1e6)|0;
+        const lam=side*(n?30+r*22:15+r*9);
+        if(Math.abs(a+16)<5&&n===0)continue;     // 랜드마크 자리
+        let sp;
+        if(i===0){const v=60+r*35;sp=tower(7+(r*8|0),14+(hash(a,i+n)*26|0),[v,v,v+5],.12,rgb([v*1.4,v*1.4,v*1.45]),seed)}
+        else if(i===1)sp=shop(10+(r*5|0),14+(hash(a,i)*8|0),warm[seed%5],['#e84a4a','#f08a2a','#d94a7a'][seed%3],seed);
+        else sp=tower(7+(r*7|0),12+(hash(a,i+n)*22|0),warm[seed%5],.55,'#ffe08a',seed);
+        WORLD.push({th:c+a+(hash(seed,1)-.5)*3,lam,s:sp});
+      }
     }
-    if(i===2)WORLD.push({a:c-12,s:ACC(),label:'ACC'});
-    if(i===3){WORLD.push({a:c-12,s:GUDO(),label:'구도청'});WORLD.push({a:c+12,s:JEONIL(),label:'전일빌딩245'})}
-    if(i===4){WORLD.push({a:c-13,s:ACC(),label:'ACC'});WORLD.push({a:c+13,s:JEONIL(),label:'전일빌딩245'})}
+    const L=(sp,side,label)=>WORLD.push({th:c-16,lam:side*20,s:sp,label});
+    if(i===2){L(ACC(),-1,'ACC');L(SKYGARDEN(),1,'하늘마당')}
+    if(i===3){L(GUDO(),-1,'구도청');L(JEONIL(),1,'전일빌딩245')}
+    if(i===4){L(ACC(),-1,'ACC');L(JEONIL(),1,'전일빌딩245')}
   });
 }
 
@@ -167,12 +178,10 @@ const SKY={night:[[10,12,36],[44,46,86]],day:[[110,185,240],[214,236,250]],sunse
 let STARS=[];
 function sky(p){
   const n=1-sm(.07,.2,p), ss=sm(.84,.95,p);
-  const top=mix(mix(SKY.day[0],SKY.night[0],n),SKY.sunset[0],ss), bot=mix(mix(SKY.day[1],SKY.night[1],n),SKY.sunset[1],ss);
+  const dawn=Math.max(0,1-Math.abs(p-.13)/.08);   // 새벽: 지평선 쪽 분홍빛
+  const top=mix(mix(SKY.day[0],SKY.night[0],n),SKY.sunset[0],ss), bot=mix(mix(mix(SKY.day[1],SKY.night[1],n),SKY.sunset[1],ss),[255,170,140],dawn*.6);
   for(let y=0;y<bh;y+=3){g.fillStyle=rgb(mix(top,bot,Math.min(1,y/(bh*.75))));g.fillRect(0,y,bw,3)}
   if(n>0){g.globalAlpha=n;g.fillStyle='#fff';STARS.forEach(([x,y,b])=>{if(b>.7||Math.sin(performance.now()/400+x)>-.3)g.fillRect(x,y,1,1)});g.globalAlpha=1}
-  // 새벽: 지평선 쪽 분홍빛
-  const dawn=Math.max(0,1-Math.abs(p-.13)/.08);
-  if(dawn>0){g.globalAlpha=dawn*.5;for(let y=bh*.4|0;y<bh;y+=3){g.fillStyle='#ffb48a';g.globalAlpha=dawn*.5*(y-bh*.4)/(bh*.6);g.fillRect(0,y,bw,3)}g.globalAlpha=1}
 }
 
 /* ===== 화면 크기 ===== */
@@ -196,7 +205,7 @@ function frame(){
   const moving=performance.now()-lastMove<130;
   amp+=((moving?1:0)-amp)*.18;if(!moving&&amp<.03)amp=0;
   const w=weights(p);
-  // 스크롤 내리면 행성이 반시계로 돎: 오른쪽 건물이 위로 올라와 전구 밑을 지나감
+  // 스크롤 내리면 행성이 앞으로 굴러옴
   const rot=p*(SCENES.length-1)*STEP;
 
   g.imageSmoothingEnabled=false;
@@ -204,30 +213,39 @@ function frame(){
   // 전구 빛 (8bit 동심원)
   const glow=[0,1,2].map(k=>SCENES.reduce((a,s,i)=>a+(s.glow?s.glow[k]:0)*w[i],0));
   const gs=SCENES.reduce((a,s,i)=>a+(s.glow?1:0)*w[i],0);
-  const topY=PCY-PR, bulbH=H*.3/PX;
+  const topY=PCY-PR, dh=Math.min(H*.3,W*.34), bulbH=dh/PX;
   if(gs>0)for(let r=6;r>=1;r--){const rr=r*bw*.03;g.fillStyle=rgb(glow);g.globalAlpha=.09*gs;
     for(let y=-rr;y<=rr;y+=2){const xw=Math.round(Math.sqrt(rr*rr-y*y));g.fillRect(PCX-xw,Math.round(topY-bulbH*.55+y),xw*2,2)}}
   g.globalAlpha=1;
 
-  // 건물 (행성 뒤에서 솟아 있음)
-  const labels=[];
+  // 행성이 앞으로 굴러옴: 지평선 너머(phi<0)에서 솟아 → 전구 뒤를 지나 → 우리 쪽(화면 아래)으로
+  const proj=(phi,lam)=>{const cl=Math.cos(lam);return{x:PCX+Math.sin(lam)*PR,y:PCY-PR*cl*Math.cos(phi),z:cl*Math.sin(phi),
+    up:Math.hypot(Math.sin(lam),cl*Math.cos(phi)),ang:Math.atan2(Math.sin(lam),cl*Math.cos(phi))}};
+  const labels=[],backB=[],frontB=[];
   for(const b of WORLD){
-    let a=b.a-rot;if(Math.abs(a)>75)continue;
-    a*=D;const x=PCX+Math.sin(a)*PR,y=PCY-Math.cos(a)*PR;
-    g.save();g.translate(x,y);g.rotate(a);g.drawImage(b.s,-b.s.width/2|0,-b.s.height+2);g.restore();
-    if(b.label&&Math.abs(a)<40*D)labels.push({t:b.label,x:(PCX+Math.sin(a)*(PR-7))*PX,y:(PCY-Math.cos(a)*(PR-7))*PX,al:1-Math.abs(a)/(40*D)});
+    const phi=rot-b.th;if(phi<-35||phi>70)continue;
+    const q=proj(phi*D,b.lam*D);q.b=b;q.phi=phi;(q.z<0?backB:frontB).push(q);
   }
+  const drawB=q=>{const b=q.b,k=(b.label?2:1.6)*(1+.8*Math.max(0,q.z)),sw=Math.round(b.s.width*k),sh=Math.max(1,Math.round(b.s.height*k*q.up));
+    g.save();g.translate(q.x,q.y);g.rotate(q.ang);g.drawImage(b.s,Math.round(-sw/2),-sh+2,sw,sh);g.restore();
+    if(b.label&&q.phi>2&&q.y<bh)labels.push({t:b.label,x:q.x*PX,y:q.y*PX,al:Math.min(1,(q.phi-2)/8)})};
+  backB.forEach(drawB);
   // 행성
   const n=1-sm(.07,.2,p),ss=sm(.84,.95,p);
   const ground=mix(mix([120,168,96],[58,60,70],n),[150,96,90],ss);
   g.fillStyle=rgb(ground.map(v=>v*.8));g.beginPath();g.arc(PCX,PCY,PR,0,7);g.fill();
-  g.fillStyle=rgb(ground);g.beginPath();g.arc(PCX,PCY,PR-1,0,7);g.fill();
-  g.fillStyle=rgb(ground.map(v=>v*1.15));g.beginPath();g.arc(PCX,PCY,PR-2,0,7);g.fill();
-  g.fillStyle=rgb(ground);g.beginPath();g.arc(PCX,PCY,PR-4,0,7);g.fill();
-  // 땅 무늬(같이 돎)
-  for(let k=0;k<360;k+=3){let a=(k-rot%360+540)%360-180;if(Math.abs(a)>70)continue;a*=D;
-    for(let d=8;d<60;d+=11){const dd=d+(hash(k,d)*6|0);g.fillStyle=rgb(ground.map(v=>v*(hash(d,k)<.5?.85:1.12)));
-      g.fillRect(Math.round(PCX+Math.sin(a)*(PR-dd)),Math.round(PCY-Math.cos(a)*(PR-dd)),2,1)}}
+  g.fillStyle=rgb(ground.map(v=>v*1.15));g.beginPath();g.arc(PCX,PCY,PR-1,0,7);g.fill();
+  g.fillStyle=rgb(ground);g.beginPath();g.arc(PCX,PCY,PR-3,0,7);g.fill();
+  // 가운데 길 (앞으로 흘러옴)
+  const road=mix(ground.map(v=>v*.62),[60,60,66],.4);
+  for(let ph=0;ph<70;ph+=.5){const y=Math.round(PCY-PR*Math.cos(ph*D));if(y>bh)break;
+    const hw=Math.round(bw*.045*(1+.8*Math.sin(ph*D)));g.fillStyle=rgb(road);g.fillRect(PCX-hw,y,hw*2,2);
+    if((((rot-ph)%6)+6)%6<2.5){g.fillStyle=n>.5?'#9a9aa2':'#f3e6b0';g.fillRect(PCX-1,y,2,2)}}
+  // 땅 무늬 (같이 굴러옴)
+  for(let k=Math.floor((rot-70)/4);k<=Math.ceil(rot/4);k++){const phi=rot-k*4;if(phi<1)continue;
+    for(let j=-8;j<=8;j++){if(Math.abs(j)<2)continue;const lam=(j*7+hash(k,j)*4)*D,q=proj(phi*D,lam);
+      g.fillStyle=rgb(ground.map(v=>v*(hash(j,k)<.5?.85:1.12)));g.fillRect(Math.round(q.x),Math.round(q.y),1+(q.z>.3?1:0)+1,1)}}
+  frontB.sort((a,b)=>a.z-b.z).forEach(drawB);
   // 전구 발밑 빛 웅덩이
   if(gs>0){g.globalAlpha=.25*gs;g.fillStyle=rgb(glow);for(let i=0;i<3;i++){g.beginPath();g.ellipse(PCX,topY+3,bw*(.12-i*.035),5-i*1.4,0,0,7);g.fill()}g.globalAlpha=1}
 
@@ -235,11 +253,11 @@ function frame(){
 
   // 이름표
   ctx.save();ctx.font=`bold ${13*dpr}px system-ui,sans-serif`;ctx.textAlign='center';
-  for(const l of labels){ctx.globalAlpha=Math.min(1,l.al*2);ctx.fillStyle='#000';ctx.fillText(l.t,l.x*dpr+2,l.y*dpr+2+14*dpr);ctx.fillStyle='#fff';ctx.fillText(l.t,l.x*dpr,l.y*dpr+14*dpr)}
+  for(const l of labels){ctx.globalAlpha=Math.min(1,l.al*2);ctx.fillStyle='#000';ctx.fillText(l.t,l.x*dpr+2,l.y*dpr+2+16*dpr);ctx.fillStyle='#fff';ctx.fillText(l.t,l.x*dpr,l.y*dpr+16*dpr)}
   ctx.restore();
 
   // 전구
-  const base=(topY+1)*PX, dh=H*.3;
+  const base=(topY+1)*PX;
   SCENES.forEach((s,i)=>drawWalker(s.spr,W/2,base,dh,w[i]));
 
   // 자막·점·힌트
