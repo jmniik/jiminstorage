@@ -60,21 +60,24 @@ for color, name in SOURCES.items():
         gif_frames.append(enlarged)
         rgba_frames.append(enlarged.convert('RGBA'))
     gif_path = OUT/f'{color}_걷기_8비트.gif'
-    print('palette diagnostics', [(f.mode,len(f.getpalette()),len(f.palette.palette),f.palette.mode) for f in gif_frames])
     gif_frames[0].save(gif_path,save_all=True,append_images=gif_frames[1:],
-                       duration=DURATION,loop=0,disposal=2,transparency=255,optimize=False)
-    contact = Image.new('RGBA',(DISPLAY[0]*4,DISPLAY[1]*2))
-    for i, frame in enumerate(rgba_frames):
+                       duration=DURATION,loop=0,disposal=2,transparency=255,optimize=False,
+                       palette=bytes(palette.getpalette()))
+    contact = Image.new('P',(DISPLAY[0]*4,DISPLAY[1]*2),255)
+    contact.putpalette(palette.getpalette())
+    contact.info['transparency']=255
+    for i, frame in enumerate(gif_frames):
         contact.paste(frame,((i%4)*DISPLAY[0],(i//4)*DISPLAY[1]))
     sheet_path = OUT/f'{color}_모션시트_8비트.png'
-    contact.save(sheet_path)
+    contact.save(sheet_path,transparency=255,bits=8)
+    assert Image.open(sheet_path).mode=='P'
     # Verify exported pixels, rather than relying on file bit depth alone.
     check = Image.open(gif_path)
     assert check.n_frames==8 and check.info['loop']==0
     for decoded in ImageSequence.Iterator(check):
         assert decoded.info['duration']==DURATION
         rgba=decoded.convert('RGBA')
-        assert set(rgba.getchannel('A').getdata())=={0,255}
+        assert set(rgba.getchannel('A').get_flattened_data())=={0,255}
         assert len(rgba.getcolors(rgba.width*rgba.height))<=33
         rebuilt=rgba.resize(LOGICAL,Image.Resampling.NEAREST).resize(DISPLAY,Image.Resampling.NEAREST)
         assert rgba.tobytes()==rebuilt.tobytes(), 'Every dot must be an exact 4x4 block'
