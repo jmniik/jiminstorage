@@ -5,17 +5,17 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>전구 · 첫 화면</title>
 <style>
-  html,body{margin:0;background:#16161c;color:#f4f1ea;font-family:system-ui,"Malgun Gothic","Apple SD Gothic Neo",sans-serif}
+  html,body{margin:0;background:#0e1024;color:#f4f1ea;font-family:system-ui,"Malgun Gothic","Apple SD Gothic Neo",sans-serif}
   #scroll{height:1000vh;position:relative}
   #stage{position:sticky;top:0;height:100vh;width:100%;overflow:hidden}
   #c{display:block;width:100%;height:100%;image-rendering:pixelated}
-  .cap{position:absolute;left:0;right:0;top:7vh;text-align:center;pointer-events:none;transition:opacity .35s}
+  .cap{position:absolute;left:0;right:0;top:8vh;text-align:center;pointer-events:none;transition:opacity .35s}
   .cap b{display:block;font-size:clamp(22px,3.4vw,40px);letter-spacing:.04em;text-shadow:0 3px 0 #000}
-  .cap span{display:block;margin-top:8px;font-size:clamp(13px,1.4vw,16px);opacity:.8;text-shadow:0 2px 0 #000}
-  .hint{position:absolute;left:50%;bottom:3vh;transform:translateX(-50%);font-size:13px;letter-spacing:.2em;opacity:.8;transition:opacity .3s;animation:bob 1.4s steps(2) infinite}
+  .cap span{display:block;margin-top:8px;font-size:clamp(13px,1.4vw,16px);opacity:.85;text-shadow:0 2px 0 #000}
+  .hint{position:absolute;left:50%;bottom:3vh;transform:translateX(-50%);font-size:13px;letter-spacing:.2em;transition:opacity .3s;text-shadow:0 2px 0 #000;animation:bob 1.4s steps(2) infinite}
   @keyframes bob{50%{transform:translate(-50%,6px)}}
   .dots{position:absolute;right:22px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:12px}
-  .dots i{width:10px;height:10px;background:#555;outline:2px solid #000;transition:transform .2s}
+  .dots i{width:10px;height:10px;outline:2px solid #000;transition:transform .2s}
   .dots i.on{transform:scale(1.5)}
 </style>
 </head>
@@ -29,258 +29,225 @@
   </div>
 </div>
 <script>
-/* ---------- 기본 ---------- */
+/* ===== 기본 ===== */
 const cv=document.getElementById('c'),ctx=cv.getContext('2d');
-const mk=()=>{const c=document.createElement('canvas');return [c,c.getContext('2d')]};
-const [fbG,gG]=mk(), [fbC,gC]=mk(), [tb,gT]=mk();
-const PX=4;                       // 화면 4px = 픽셀 1칸 (8bit 느낌)
-let W,H,dpr,bw,bh,gy,distMap,R;
+const buf=document.createElement('canvas'),g=buf.getContext('2d');
+const PX=4;                                   // 화면 4px = 픽셀 1칸
+let W,H,dpr,bw,bh;
 const sm=(a,b,x)=>{x=Math.min(1,Math.max(0,(x-a)/(b-a)));return x*x*(3-2*x)};
-const rng=s=>()=>((s=(s*1664525+1013904223)>>>0)/4294967296);
 const hash=(a,b)=>{let h=(a*374761393+b*668265263)^0x5bd1e995;h=Math.imul(h^(h>>>13),1274126177);return ((h^(h>>>16))>>>0)/4294967296};
-const rgb=(r,g,b)=>`rgb(${r|0},${g|0},${b|0})`;
+const rgb=c=>`rgb(${c[0]|0},${c[1]|0},${c[2]|0})`;
+const mix=(a,b,t)=>a.map((v,i)=>v+(b[i]-v)*t);
+const D=Math.PI/180;
 
-/* ---------- 스프라이트 ---------- */
+/* ===== 장면 (노트 순서) =====
+   0 밤 · 회색 도시 · 흰 전구
+   1 밝은 배경 · 음식점 · 빨간 전구
+   2 밝은 배경 · ACC · 초록 전구
+   3 밝은 배경 · 구도청 · 전일빌딩 · 파란 전구
+   4 노을 · ACC · 전일빌딩 · 노란 전구                    */
+const SCENES=[
+  {spr:'white', glow:null,          cap:['회색 도시','밤 · 흰 전구'],                 dot:'#cfcfd8'},
+  {spr:'red',   glow:[255,80,80],   cap:['빨간 전구','음식점 거리'],                   dot:'#ff4a4a'},
+  {spr:'green', glow:[100,255,100], cap:['초록 전구','ACC'],                          dot:'#56e04a'},
+  {spr:'blue',  glow:[70,170,255],  cap:['파란 전구','구도청 · 전일빌딩'],              dot:'#3aa5ff'},
+  {spr:'yellow',glow:[255,210,100], cap:['노란 전구','노을 · ACC · 전일빌딩'],          dot:'#f5b942'},
+];
+const STEP=72;                                 // 장면마다 행성 72°씩
+// 스크롤 0~1 → 장면 위치 0~4 (장면 i는 i/4 지점에서 정중앙)
+const sceneW=(p,i)=>{const s=p*4;return Math.max(0,1-Math.abs(s-i)/.5)>=.5?Math.min(1,(1-Math.abs(s-i)/.5)*2-0):0};
+function weights(p){
+  const s=p*4,w=SCENES.map((_,i)=>{const d=Math.abs(s-i);return d<.38?1:d>.62?0:1-sm(.38,.62,d)});
+  const t=w.reduce((a,b)=>a+b,0);return w.map(v=>v/t);
+}
+
+/* ===== 스프라이트 ===== */
 const SPR={};
-['white-front','white-top','red-top','green-top','blue-top','yellow-front'].forEach(n=>{const i=new Image();i.src=`img/${n}.png`;SPR[n]=i});
-// 몸통/팔/발 나누는 기준(이미지 높이·너비 비율)
-const CFG={front:{aT:.74,aB:.85,fY:.85,aL:.17,aR:.83},top:{aT:.56,aB:.72,fY:.84,aL:.115,aR:.885}};
+SCENES.forEach(s=>{const i=new Image();i.src=`img/${s.spr}-front.png`;i.onload=()=>measure(s.spr,i);SPR[s.spr]=i});
+const CUT={};
+// 몸 바깥 테두리를 재서 팔 자를 위치를 잡음
+function measure(n,img){
+  const c=document.createElement('canvas');c.width=img.naturalWidth;c.height=img.naturalHeight;
+  const x=c.getContext('2d');x.drawImage(img,0,0);
+  const w=c.width,h=c.height,d=x.getImageData(0,0,w,h).data;
+  let x0=w,x1=0;
+  for(let y=h*.76|0;y<h*.83;y++)for(let xx=0;xx<w;xx++)if(d[(y*w+xx)*4+3]>40){x0=Math.min(x0,xx);x1=Math.max(x1,xx)}
+  const bwid=x1-x0;
+  CUT[n]={aT:h*.755|0,fY:h*.84|0,aL:x0+bwid*.185|0,aR:x1-bwid*.185|0,mid:(x0+x1)/2|0};
+}
 
-/* ---------- 스크롤 걷기 ---------- */
+/* ===== 걷기: 스크롤할 때만 ===== */
 let lastY=scrollY,phase=0,amp=0,lastMove=-1e9;
-addEventListener('scroll',()=>{const dy=scrollY-lastY;lastY=scrollY;phase+=Math.abs(dy)*.035;lastMove=performance.now()},{passive:true});
+addEventListener('scroll',()=>{const dy=scrollY-lastY;lastY=scrollY;phase+=Math.abs(dy)*.03;lastMove=performance.now()},{passive:true});
 
-function drawWalker(name,cx,baseY,dispH,alpha){
-  const img=SPR[name];if(!img.complete||!img.naturalWidth||alpha<=0)return;
-  const c=CFG[name.endsWith('front')?'front':'top'];
+// 정면 걷기: 앞으로 나온 쪽은 크고 아래, 뒤로 간 쪽은 작고 위
+function drawWalker(n,cx,baseY,dispH,alpha){
+  const img=SPR[n],c=CUT[n];if(!c||alpha<=0)return;
   const w=img.naturalWidth,h=img.naturalHeight,k=dispH/h;
-  const s=Math.sin(phase)*amp;
-  const bob=Math.round(-Math.abs(s)*h*.035), lift=h*.06, sw=h*.04;
-  const aT=c.aT*h|0,aB=c.aB*h|0,fY=c.fY*h|0,aL=c.aL*w|0,aR=c.aR*w|0,hw=w/2|0;
+  const s=Math.sin(phase)*amp, cs=Math.cos(phase)*amp;
+  const bob=-(Math.abs(cs))*h*.025;            // 발이 모일 때 몸이 살짝 올라감
   ctx.save();ctx.globalAlpha=alpha;ctx.imageSmoothingEnabled=false;
-  // 그림자
-  ctx.fillStyle='rgba(0,0,0,.28)';ctx.beginPath();
-  ctx.ellipse(cx*dpr,baseY*dpr,dispH*.36*dpr*(1-Math.abs(s)*.12),dispH*.05*dpr,0,0,7);ctx.fill();
-  ctx.translate(cx*dpr,baseY*dpr);ctx.rotate(s*.05);ctx.scale(k*dpr,k*dpr);ctx.translate(-w/2,-h);
-  const P=(sx,sy,ww,hh,dy)=>{if(ww>0&&hh>0)ctx.drawImage(img,sx,sy,ww,hh,sx,sy+Math.round(dy),ww,hh)};
-  // 발: 좌우 번갈아 들기
-  P(0,fY,hw,h-fY,-Math.max(0,s)*lift);
-  P(hw,fY,w-hw,h-fY,-Math.max(0,-s)*lift);
-  // 몸통(살짝 통통 튐)
-  P(0,0,w,aT+1,bob);P(aL,aT,aR-aL,aB-aT+1,bob);P(0,aB,w,fY-aB+1,bob);
-  // 팔: 발과 반대로 흔들기
-  P(0,aT,aL,aB-aT,bob+s*sw);P(aR,aT,w-aR,aB-aT,bob-s*sw);
+  ctx.fillStyle='rgba(0,0,0,.25)';ctx.beginPath();ctx.ellipse(cx*dpr,baseY*dpr,dispH*.34*dpr,dispH*.045*dpr,0,0,7);ctx.fill();
+  ctx.translate(cx*dpr,baseY*dpr);ctx.rotate(s*.035);ctx.scale(k*dpr,k*dpr);ctx.translate(-c.mid,-h);
+  // f: +1 앞 / -1 뒤
+  const part=(sx,sy,pw,ph,f,dy)=>{
+    if(pw<=0||ph<=0)return;const sc=1+.16*f;
+    const cx0=sx+pw/2,cy0=sy+ph/2;
+    ctx.drawImage(img,sx,sy,pw,ph,Math.round(cx0-pw*sc/2),Math.round(cy0-ph*sc/2+f*h*.035+dy),Math.round(pw*sc),Math.round(ph*sc));
+  };
+  const body=()=>{
+    ctx.drawImage(img,0,0,w,c.aT+1,0,Math.round(bob),w,c.aT+1);
+    ctx.drawImage(img,c.aL,c.aT,c.aR-c.aL,c.fY-c.aT+1,c.aL,c.aT+Math.round(bob),c.aR-c.aL,c.fY-c.aT+1);
+  };
+  const armL=()=>part(0,c.aT,c.aL,c.fY-c.aT,-s,bob), armR=()=>part(c.aR,c.aT,w-c.aR,c.fY-c.aT,s,bob);
+  const liftL=-Math.max(0,cs)*h*.05, liftR=-Math.max(0,-cs)*h*.05;   // 앞으로 내딛는 발이 들림
+  const footL=()=>part(0,c.fY,c.mid,h-c.fY,s,liftL), footR=()=>part(c.mid,c.fY,w-c.mid,h-c.fY,-s,liftR);
+  // 뒤에 있는 것 먼저 → 몸 → 앞에 있는 것 (왼발이 앞이면 오른팔이 앞)
+  const back=[],front=[];
+  (s>=0?front:back).push(footL);(s>=0?back:front).push(footR);
+  (s>=0?front:back).push(armR);(s>=0?back:front).push(armL);
+  back.forEach(f=>f());body();front.forEach(f=>f());
   ctx.restore();
 }
 
-/* ---------- 정면 도시 (회색 / 마지막 컬러) ---------- */
-let sky=[];
-function buildSkyline(){
-  const r=rng(11);sky=[];
-  for(const layer of [0,1])for(const side of [-1,1]){
-    let x=side<0?Math.round(bw*(layer?.37:.42)):Math.round(bw*(layer?.63:.58));
-    while(side<0?x>-20:x<bw+20){
-      const w=7+(r()*13|0), h=Math.round(gy*(layer?.18+r()*.38:.35+r()*.4));
-      const bx=side<0?x-w:x;
-      sky.push({x:bx,w,h,layer,shade:r(),seed:r()*1e6|0,side});
-      x+=side*(w+(r()<.35?1:0));
+/* ===== 건물 픽셀 스프라이트 ===== */
+function spr(w,h,fn){const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');fn(x,w,h);return c}
+function tower(w,h,base,lit,litC,seed){return spr(w,h,(x)=>{
+  x.fillStyle=rgb(base);x.fillRect(0,0,w,h);
+  x.fillStyle=rgb(base.map(v=>v*1.25));x.fillRect(0,0,w,1);
+  x.fillStyle=rgb(base.map(v=>v*.7));x.fillRect(w-1,0,1,h);
+  for(let y=3;y<h-2;y+=3)for(let xx=2;xx<w-1;xx+=3){x.fillStyle=hash(seed+xx,y)<lit?litC:rgb(base.map(v=>v*.78));x.fillRect(xx,y,1,1)}
+})}
+function shop(w,h,base,awn,seed){return spr(w,h,(x)=>{
+  x.fillStyle=rgb(base);x.fillRect(0,0,w,h);x.fillStyle=rgb(base.map(v=>v*.7));x.fillRect(w-1,0,1,h);
+  x.fillStyle='#fff3c4';x.fillRect(2,2,w-4,3);x.fillStyle=awn;for(let i=3;i<w-3;i+=3)x.fillRect(i,3,1,1); // 간판
+  for(let i=0;i<w;i++){x.fillStyle=i%4<2?awn:'#fff7ea';x.fillRect(i,h-9,1,3)}                      // 줄무늬 차양
+  x.fillStyle='#ffe39a';x.fillRect(2,h-6,w/2-3|0,4);x.fillStyle='#5a3a2a';x.fillRect(w-6,h-6,3,6);  // 창, 문
+  for(let y=8;y<h-11;y+=3)for(let xx=2;xx<w-1;xx+=3){x.fillStyle=hash(seed+xx,y)<.5?'#ffe39a':rgb(base.map(v=>v*.75));x.fillRect(xx,y,1,1)}
+})}
+const ACC=()=>spr(46,16,(x,w,h)=>{
+  x.fillStyle='#2f5f7a';x.fillRect(0,3,w,h-3);
+  for(let y=5;y<h;y+=3)for(let i=1;i<w-1;i+=2){x.fillStyle=hash(i,y)<.55?'#ffe08a':'#6fb6d6';x.fillRect(i,y,1,2)}
+  x.fillStyle='#4f9a4a';x.fillRect(0,1,w,2);for(let i=1;i<w;i+=5){x.fillStyle='#7ccc60';x.fillRect(i,0,3,1)}
+});
+const GUDO=()=>spr(26,14,(x,w,h)=>{              // 구도청(옛 전남도청): 흰 3층
+  x.fillStyle='#8a6a58';x.fillRect(0,0,w,2);
+  x.fillStyle='#efe9dc';x.fillRect(1,2,w-2,h-2);
+  for(let y=4;y<h-1;y+=3)for(let i=3;i<w-2;i+=2){x.fillStyle='#55463f';x.fillRect(i,y,1,1)}
+  x.fillStyle='#c9bfae';x.fillRect(w/2-2|0,h-5,4,5);
+});
+const JEONIL=()=>spr(15,44,(x,w,h)=>{             // 전일빌딩245: 높은 격자
+  x.fillStyle='#e9e2d0';x.fillRect(0,0,w,h);x.fillStyle='#b9ae98';x.fillRect(w-2,0,2,h);
+  x.fillStyle='#4a4a58';x.fillRect(0,0,w,3);
+  for(let y=5;y<h-2;y+=4)for(let i=2;i<w-3;i+=3){x.fillStyle=hash(i,y)<.55?'#ffd36a':'#7a8696';x.fillRect(i,y,2,2)}
+});
+
+// 행성 둘레에 건물 배치 (각도 θ: 장면 i 중심 = i*72°)
+let WORLD=[];
+function buildWorld(){
+  WORLD=[];const warm=[[110,80,140],[150,90,110],[80,110,150],[170,110,90],[90,130,130]];
+  SCENES.forEach((sc,i)=>{
+    const c=i*STEP;
+    for(let a=-32;a<=32;a+=4+hash(i,a)*3){
+      if(Math.abs(a)<6)continue;                 // 전구 바로 밑은 비움
+      const r=hash(i*7,a*13), seed=(r*1e6)|0;
+      let s;
+      if(i===0){const v=60+r*35;s=tower(7+(r*8|0),14+(hash(a,i)*26|0),[v,v,v+5],.12,rgb([v*1.4,v*1.4,v*1.45]),seed)}
+      else if(i===1){s=shop(10+(r*5|0),14+(hash(a,i)*8|0),warm[seed%5],['#e84a4a','#f08a2a','#d94a7a'][seed%3],seed)}
+      else s=tower(7+(r*7|0),12+(hash(a,i)*22|0),warm[seed%5],.55,'#ffe08a',seed);
+      WORLD.push({a:c+a,s,back:true});
     }
-  }
-}
-function band(g,y0,y1,top,bot,step){
-  for(let y=y0;y<y1;y+=step){const t=(y-y0)/(y1-y0);g.fillStyle=rgb(top[0]+(bot[0]-top[0])*t,top[1]+(bot[1]-top[1])*t,top[2]+(bot[2]-top[2])*t);g.fillRect(0,y,bw,step)}
-}
-function windows(g,b,x,y,w,h,lit,litC,offC,seed){
-  for(let wy=y+3;wy<y+h-2;wy+=3)for(let wx=x+2;wx<x+w-1;wx+=3){
-    g.fillStyle=hash(seed+wx,wy)<lit?litC:offC;g.fillRect(wx,wy,1,1)}
-}
-function drawFront(g,color){
-  g.imageSmoothingEnabled=false;
-  if(color)band(g,0,gy,[36,26,70],[246,160,92],3);else band(g,0,gy,[34,34,40],[82,82,90],3);
-  // 땅/길
-  g.fillStyle=color?'#3c3044':'#2c2c31';g.fillRect(0,gy,bw,bh-gy);
-  g.fillStyle=color?'#55465c':'#3a3a40';g.fillRect(0,gy,bw,2);
-  for(let x=0;x<bw;x+=8){g.fillStyle=color?'#f0c060':'#55555c';g.fillRect(x,gy+((bh-gy)*.55|0),4,1)}
-  const pal=[[92,70,128],[128,78,112],[70,92,138],[150,96,86],[84,110,120]];
-  for(const b of sky){
-    const y=gy-b.h;
-    let base;
-    if(color){const p=pal[b.seed%pal.length];const f=b.layer?.75:1;base=p.map(v=>v*f)}
-    else{const v=(b.layer?72:56)+b.shade*30;base=[v,v,v+4]}
-    g.fillStyle=rgb(...base);g.fillRect(b.x,y,b.w,b.h);
-    g.fillStyle=rgb(...base.map(v=>v*.7));g.fillRect(b.x+b.w-1,y,1,b.h);
-    g.fillStyle=rgb(...base.map(v=>Math.min(255,v*1.25)));g.fillRect(b.x,y,b.w,1);
-    windows(g,b,b.x,y,b.w,b.h,color?.55:.12,color?'#ffd877':rgb(...base.map(v=>v*1.35)),rgb(...base.map(v=>v*.8)),b.seed);
-  }
-  if(color)landmarksFront(g);
-}
-let LM={};
-function landmarksFront(g){
-  // ACC (왼쪽): 낮고 넓은 유리 건물 + 옥상 정원
-  const aw=Math.round(bw*.17),ah=Math.round(gy*.2),ax=Math.round(bw*.4)-aw,ay=gy-ah;
-  g.fillStyle='#2f5f7a';g.fillRect(ax,ay,aw,ah);
-  for(let y=ay+2;y<gy;y+=3)for(let x=ax+1;x<ax+aw-1;x+=2){g.fillStyle=hash(x,y)<.6?'#ffe08a':'#6fb6d6';g.fillRect(x,y,1,2)}
-  g.fillStyle='#4f9a4a';g.fillRect(ax-1,ay-2,aw+2,2);
-  for(let x=ax;x<ax+aw;x+=5){g.fillStyle='#78c35e';g.fillRect(x,ay-4,3,2)}
-  // 옛 전남도청(앞 흰 건물)
-  const ow=Math.round(aw*.38),oh=Math.round(ah*.62),ox=ax+aw-ow-2,oy=gy-oh;
-  g.fillStyle='#ece6d8';g.fillRect(ox,oy,ow,oh);g.fillStyle='#8a7060';g.fillRect(ox-1,oy-1,ow+2,1);
-  for(let y=oy+2;y<gy-1;y+=3)for(let x=ox+1;x<ox+ow-1;x+=2){g.fillStyle='#5a4a48';g.fillRect(x,y,1,1)}
-  // 전일빌딩245 (오른쪽): 높은 격자 건물
-  const jw=Math.round(bw*.1),jh=Math.round(gy*.62),jx=Math.round(bw*.6),jy=gy-jh;
-  g.fillStyle='#e9e2d0';g.fillRect(jx,jy,jw,jh);
-  g.fillStyle='#b9ae98';g.fillRect(jx+jw-2,jy,2,jh);
-  g.fillStyle='#4a4a58';g.fillRect(jx,jy,jw,3);
-  for(let y=jy+5;y<gy-2;y+=4)for(let x=jx+2;x<jx+jw-3;x+=3){g.fillStyle=hash(x,y)<.55?'#ffd36a':'#7a8696';g.fillRect(x,y,2,2)}
-  LM.acc={x:(ax+aw/2)*PX,y:gy*PX};LM.jeonil={x:(jx+jw/2)*PX,y:gy*PX};
-  // 노랑 전구 뒤 빛 (8bit 동심원)
-  const cx=bw/2,cy=gy-(H*.34/PX)*.62;
-  for(let i=6;i>=1;i--){const r=i*(bw*.035);g.fillStyle=`rgba(255,214,110,${.07})`;
-    for(let y=-r;y<=r;y+=2){const xw=Math.round(Math.sqrt(r*r-y*y));g.fillRect(Math.round(cx-xw),Math.round(cy+y),xw*2,2)}}
+    if(i===2)WORLD.push({a:c-12,s:ACC(),label:'ACC'});
+    if(i===3){WORLD.push({a:c-12,s:GUDO(),label:'구도청'});WORLD.push({a:c+12,s:JEONIL(),label:'전일빌딩245'})}
+    if(i===4){WORLD.push({a:c-13,s:ACC(),label:'ACC'});WORLD.push({a:c+13,s:JEONIL(),label:'전일빌딩245'})}
+  });
 }
 
-/* ---------- 윗면: 움직이는 도시 ---------- */
-const C=18, HALF=7;
-function drawTop(g,p,tint,ts){
-  const cx=bw/2|0,cy=bh/2|0,L=bh*8,off=(p-.14)*L;
-  g.fillStyle='#3a3a40';g.fillRect(0,0,bw,bh);
-  // 중앙 길 점선
-  for(let y=0;y<bh;y++){if(((y-off)%10+10)%10<5){g.fillStyle='#77777e';g.fillRect(cx,y,1,1)}}
-  const jL=Math.round(-(0.73-.14)*L/C);           // 랜드마크 위치(파랑 구간에서 중앙 통과)
-  const j0=Math.floor((-cy-off)/C)-1, j1=Math.ceil((bh-cy-off)/C)+1;
-  for(let j=j0;j<=j1;j++){
-    const y=Math.round(cy+j*C+off);
-    for(const side of [-1,1])for(let i=0;i*C<bw/2+C;i++){
-      const x=side>0?cx+HALF+i*C:cx-HALF-(i+1)*C;
-      const near=j>=jL-1&&j<=jL+1;
-      if(near&&((side<0&&i<=4)||(side>0&&i<=1)))continue;
-      const h=hash(i*side+500,j);
-      if(h<.1){g.fillStyle='#45504a';g.fillRect(x+2,y+2,C-3,C-3);for(let t=0;t<4;t++){g.fillStyle='#55665a';g.fillRect(x+3+(hash(t,j+i)*(C-7)|0),y+3+(hash(j,t+i)*(C-7)|0),2,2)}continue}
-      const split=h>.6, v=96+hash(i,j*3+side)*64;
-      const rects=split?[[x+2,y+2,C-3,(C-4)/2|0],[x+2,y+2+((C-4)/2|0)+1,C-3,(C-4)/2|0]]:[[x+2,y+2,C-3,C-3]];
-      rects.forEach(([rx,ry,rw,rh],n)=>{
-        const vv=v+n*14;
-        g.fillStyle=rgb(vv*.55,vv*.55,vv*.6);g.fillRect(rx+1,ry+1,rw,rh);      // 그림자
-        g.fillStyle=rgb(vv,vv,vv+4);g.fillRect(rx,ry,rw,rh);
-        g.fillStyle=rgb(vv*1.18,vv*1.18,vv*1.2);g.fillRect(rx,ry,rw,1);
-        g.fillStyle=rgb(vv*.75,vv*.75,vv*.8);g.fillRect(rx+1+(hash(j,i+n)*(rw-4)|0),ry+1+(hash(i+n,j)*(rh-4)|0),2,2);
-      });
-    }
-  }
-  // 랜드마크: 5·18 민주광장 분수대 + ACC + 전일빌딩
-  const ly=Math.round(cy+(jL-1)*C+off), lh=3*C;
-  if(ly<bh&&ly+lh>0){
-    const px0=cx-HALF-2*C, pw=2*C;
-    g.fillStyle='#9a9690';g.fillRect(px0+1,ly+2,pw-2,lh-3);
-    for(let y=ly+2;y<ly+lh-1;y+=4)for(let x=px0+1;x<px0+pw-1;x+=4){g.fillStyle='#a8a49e';g.fillRect(x,y,2,2)}
-    const fx=px0+pw/2,fy=ly+lh/2;
-    for(let y=-8;y<=8;y++)for(let x=-8;x<=8;x++){const d=Math.hypot(x,y);if(d<=8){g.fillStyle=d>6.5?'#d6d2ca':d>2?'#5d8fb4':'#e8f4ff';g.fillRect(fx+x|0,fy+y|0,1,1)}}
-    const ax0=cx-HALF-5*C, aw=3*C;
-    g.fillStyle='#3d6a3a';g.fillRect(ax0+2,ly+2,aw-3,lh-3);
-    for(let y=ly+5;y<ly+lh-4;y+=6)for(let x=ax0+5;x<ax0+aw-5;x+=7){g.fillStyle='#a9cfe0';g.fillRect(x,y,4,3)}
-    const jx=cx+HALF+2, jw=Math.round(C*1.5), jy=ly+C/2|0, jh=Math.round(C*1.6);
-    g.fillStyle='#1f1f26';g.fillRect(jx+3,jy+3,jw,jh);
-    g.fillStyle='#d9d2bf';g.fillRect(jx,jy,jw,jh);g.fillStyle='#b5ad98';g.fillRect(jx+3,jy+3,jw-6,jh-6);
-    g.fillStyle='#d9d2bf';g.fillRect(jx+5,jy+5,4,3);
-    topLabels=[{t:'ACC',x:(ax0+aw/2)*PX,y:(ly+lh+6)*PX},{t:'민주광장',x:fx*PX,y:(ly+lh+6)*PX},{t:'전일빌딩245',x:(jx+jw/2)*PX,y:(jy+jh+7)*PX}];
-  }else topLabels=[];
-  // 빛의 원: 안쪽은 전구 색으로 물들고, 바깥은 어둡게
-  const id=g.getImageData(0,0,bw,bh),d=id.data;
-  for(let k=0,n=bw*bh;k<n;k++){
-    const dist=distMap[k],o=k*4;
-    if(dist<R){
-      let f=1-dist/R;f=Math.ceil(f*4)/4;           // 8bit 계단 그라데이션
-      for(let c=0;c<3;c++){const v=d[o+c];d[o+c]=Math.min(255,v*(1-ts)+v*tint[c]/170*ts+tint[c]*.22*f*ts+18*f)}
-    }else if(dist<R+1.6){d[o]=tint[0]*.9;d[o+1]=tint[1]*.9;d[o+2]=tint[2]*.9}
-    else{const m=(d[o]+d[o+1]+d[o+2])/3*.38;d[o]=d[o+1]=m;d[o+2]=m+3}
-  }
-  g.putImageData(id,0,0);
+/* ===== 하늘 ===== */
+const SKY={night:[[10,12,36],[44,46,86]],day:[[110,185,240],[214,236,250]],sunset:[[64,44,118],[252,150,88]]};
+let STARS=[];
+function sky(p){
+  const n=1-sm(.07,.2,p), ss=sm(.84,.95,p);
+  const top=mix(mix(SKY.day[0],SKY.night[0],n),SKY.sunset[0],ss), bot=mix(mix(SKY.day[1],SKY.night[1],n),SKY.sunset[1],ss);
+  for(let y=0;y<bh;y+=3){g.fillStyle=rgb(mix(top,bot,Math.min(1,y/(bh*.75))));g.fillRect(0,y,bw,3)}
+  if(n>0){g.globalAlpha=n;g.fillStyle='#fff';STARS.forEach(([x,y,b])=>{if(b>.7||Math.sin(performance.now()/400+x)>-.3)g.fillRect(x,y,1,1)});g.globalAlpha=1}
+  // 새벽: 지평선 쪽 분홍빛
+  const dawn=Math.max(0,1-Math.abs(p-.13)/.08);
+  if(dawn>0){g.globalAlpha=dawn*.5;for(let y=bh*.4|0;y<bh;y+=3){g.fillStyle='#ffb48a';g.globalAlpha=dawn*.5*(y-bh*.4)/(bh*.6);g.fillRect(0,y,bw,3)}g.globalAlpha=1}
 }
-let topLabels=[];
 
-/* ---------- 장면 표 ---------- */
-// 0~.14 흰 전구 정면(줌아웃) · .14~.20 윗면 전환 · 흰 → .28 빨강 → .46 초록 → .64 파랑 · .82~.88 노랑 정면
-const COLORS=[
-  {spr:'white-top',tint:[225,225,235],s:.12},
-  {spr:'red-top',tint:[255,70,70],s:.85,at:.28},
-  {spr:'green-top',tint:[90,255,90],s:.85,at:.46},
-  {spr:'blue-top',tint:[60,165,255],s:.85,at:.64},
-];
-const CAPS=[
-  [0,.13,'회색 도시','빛을 잃은 흰 전구'],
-  [.19,.27,'흰 전구','회색 도시를 걷는다'],
-  [.29,.45,'① 빨강 전구','앞으로'],
-  [.47,.63,'② 초록 전구','앞으로'],
-  [.65,.81,'③ 파랑 전구','ACC · 전일빌딩 · 민주광장'],
-  [.88,1.01,'노랑 전구','ACC와 전일빌딩 사이에서'],
-];
-const DOTS=[['#9a9aa2',0],['#e9e9f0',.2],['#ff4a4a',.29],['#56e04a',.47],['#3aa5ff',.65],['#f5b942',.88]];
-const dotsEl=document.getElementById('dots');
-DOTS.forEach(([c])=>{const i=document.createElement('i');i.style.background=c;dotsEl.appendChild(i)});
-
+/* ===== 화면 크기 ===== */
+let PR,PCX,PCY;                                // 행성 반지름·중심(버퍼 픽셀)
 function resize(){
   dpr=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;
-  cv.width=W*dpr;cv.height=H*dpr;
-  bw=Math.ceil(W/PX);bh=Math.ceil(H/PX);gy=Math.round(bh*.8);
-  for(const b of [fbG,fbC,tb]){b.width=bw;b.height=bh}
-  R=Math.min(bw,bh)*.44;distMap=new Float32Array(bw*bh);
-  for(let y=0;y<bh;y++)for(let x=0;x<bw;x++)distMap[y*bw+x]=Math.hypot(x-bw/2,y-bh/2);
-  buildSkyline();drawFront(gG,false);drawFront(gC,true);
+  cv.width=W*dpr;cv.height=H*dpr;bw=Math.ceil(W/PX);bh=Math.ceil(H/PX);buf.width=bw;buf.height=bh;
+  PR=Math.round(Math.max(bw*.62,bh*.85));PCX=bw/2|0;PCY=Math.round(bh*.72)+PR;
+  STARS=Array.from({length:Math.round(bw*bh/260)},(_,i)=>[hash(i,1)*bw|0,hash(1,i)*bh*.7|0,hash(i,i)]);
 }
-addEventListener('resize',resize);resize();
+addEventListener('resize',resize);resize();buildWorld();
 
+const dotsEl=document.getElementById('dots');
+SCENES.forEach(s=>{const i=document.createElement('i');i.style.background=s.dot;dotsEl.appendChild(i)});
 const capEl=document.getElementById('cap'),hint=document.getElementById('hint');
 let capKey='';
+
 function frame(){
   const max=document.getElementById('scroll').offsetHeight-H;
   const p=Math.min(1,Math.max(0,scrollY/max));
-  amp+=((performance.now()-lastMove<130?1:0)-amp)*.18;
-  if(amp<.02&&Math.sin(phase)!==0&&performance.now()-lastMove>400)amp=0;
-  ctx.imageSmoothingEnabled=false;ctx.fillStyle='#16161c';ctx.fillRect(0,0,cv.width,cv.height);
+  const moving=performance.now()-lastMove<130;
+  amp+=((moving?1:0)-amp)*.18;if(!moving&&amp<.03)amp=0;
+  const w=weights(p);
+  // 스크롤 내리면 행성이 반시계로 돎: 오른쪽 건물이 위로 올라와 전구 밑을 지나감
+  const rot=p*(SCENES.length-1)*STEP;
 
-  const aF=1-sm(.14,.2,p), aFinal=sm(.82,.88,p), aT=sm(.14,.2,p)*(1-aFinal);
-  const baseFront=gy*PX+H*.05, frontH=H*.36;
+  g.imageSmoothingEnabled=false;
+  sky(p);
+  // 전구 빛 (8bit 동심원)
+  const glow=[0,1,2].map(k=>SCENES.reduce((a,s,i)=>a+(s.glow?s.glow[k]:0)*w[i],0));
+  const gs=SCENES.reduce((a,s,i)=>a+(s.glow?1:0)*w[i],0);
+  const topY=PCY-PR, bulbH=H*.3/PX;
+  if(gs>0)for(let r=6;r>=1;r--){const rr=r*bw*.03;g.fillStyle=rgb(glow);g.globalAlpha=.09*gs;
+    for(let y=-rr;y<=rr;y+=2){const xw=Math.round(Math.sqrt(rr*rr-y*y));g.fillRect(PCX-xw,Math.round(topY-bulbH*.55+y),xw*2,2)}}
+  g.globalAlpha=1;
 
-  // 1) 흰 전구 정면 + 회색 도시 (가까이 → 줌아웃)
-  if(aF>0){
-    const z=1.7-.7*sm(0,.12,p)-.25*sm(.12,.2,p);
-    ctx.globalAlpha=aF;
-    ctx.drawImage(fbG,0,0,bw,bh,(W/2-W/2*z)*dpr,(baseFront-baseFront*z)*dpr,W*z*dpr,H*z*dpr);
-    ctx.globalAlpha=1;
-    drawWalker('white-front',W/2,baseFront,frontH*z,aF);
+  // 건물 (행성 뒤에서 솟아 있음)
+  const labels=[];
+  for(const b of WORLD){
+    let a=b.a-rot;if(Math.abs(a)>75)continue;
+    a*=D;const x=PCX+Math.sin(a)*PR,y=PCY-Math.cos(a)*PR;
+    g.save();g.translate(x,y);g.rotate(a);g.drawImage(b.s,-b.s.width/2|0,-b.s.height+2);g.restore();
+    if(b.label&&Math.abs(a)<40*D)labels.push({t:b.label,x:(PCX+Math.sin(a)*(PR-7))*PX,y:(PCY-Math.cos(a)*(PR-7))*PX,al:1-Math.abs(a)/(40*D)});
   }
-  // 2) 윗면: 움직이는 도시 + 색 바뀌는 전구
-  if(aT>0){
-    const w=COLORS.map((c,i)=>{const on=i===0?1:sm(c.at-.02,c.at+.02,p);const next=COLORS[i+1];return on*(next?1-sm(next.at-.02,next.at+.02,p):1)});
-    const tint=[0,1,2].map(k=>COLORS.reduce((a,c,i)=>a+c.tint[k]*w[i],0));
-    const ts=COLORS.reduce((a,c,i)=>a+c.s*w[i],0);
-    drawTop(gT,p,tint,ts);
-    ctx.globalAlpha=aT;ctx.drawImage(tb,0,0,bw,bh,0,0,W*dpr,H*dpr);ctx.globalAlpha=1;
-    const th=Math.min(W,H)*.34*(1.25-.25*sm(.14,.22,p));
-    COLORS.forEach((c,i)=>drawWalker(c.spr,W/2,H/2+th*.5,th,aT*w[i]));
-    ctx.save();ctx.globalAlpha=aT;ctx.font=`bold ${13*dpr}px system-ui,sans-serif`;ctx.textAlign='center';
-    for(const l of topLabels){ctx.fillStyle='#000';ctx.fillText(l.t,l.x*dpr+2,l.y*dpr+2);ctx.fillStyle='#fff';ctx.fillText(l.t,l.x*dpr,l.y*dpr)}
-    ctx.restore();
-  }
-  // 3) 노랑 전구 정면 + ACC · 전일빌딩 (컬러 픽셀)
-  if(aFinal>0){
-    const z=1+.15*(1-sm(.82,.92,p));
-    ctx.globalAlpha=aFinal;
-    ctx.drawImage(fbC,0,0,bw,bh,(W/2-W/2*z)*dpr,(baseFront-baseFront*z)*dpr,W*z*dpr,H*z*dpr);
-    ctx.globalAlpha=1;
-    drawWalker('yellow-front',W/2,baseFront,frontH*z,aFinal);
-    ctx.save();ctx.globalAlpha=aFinal;ctx.font=`bold ${14*dpr}px system-ui,sans-serif`;ctx.textAlign='center';
-    for(const [t,l] of [['ACC',LM.acc],['전일빌딩245',LM.jeonil]]){ctx.fillStyle='#000';ctx.fillText(t,l.x*dpr+2,(l.y+26)*dpr+2);ctx.fillStyle='#ffe7a8';ctx.fillText(t,l.x*dpr,(l.y+26)*dpr)}
-    ctx.restore();
-  }
+  // 행성
+  const n=1-sm(.07,.2,p),ss=sm(.84,.95,p);
+  const ground=mix(mix([120,168,96],[58,60,70],n),[150,96,90],ss);
+  g.fillStyle=rgb(ground.map(v=>v*.8));g.beginPath();g.arc(PCX,PCY,PR,0,7);g.fill();
+  g.fillStyle=rgb(ground);g.beginPath();g.arc(PCX,PCY,PR-1,0,7);g.fill();
+  g.fillStyle=rgb(ground.map(v=>v*1.15));g.beginPath();g.arc(PCX,PCY,PR-2,0,7);g.fill();
+  g.fillStyle=rgb(ground);g.beginPath();g.arc(PCX,PCY,PR-4,0,7);g.fill();
+  // 땅 무늬(같이 돎)
+  for(let k=0;k<360;k+=3){let a=(k-rot%360+540)%360-180;if(Math.abs(a)>70)continue;a*=D;
+    for(let d=8;d<60;d+=11){const dd=d+(hash(k,d)*6|0);g.fillStyle=rgb(ground.map(v=>v*(hash(d,k)<.5?.85:1.12)));
+      g.fillRect(Math.round(PCX+Math.sin(a)*(PR-dd)),Math.round(PCY-Math.cos(a)*(PR-dd)),2,1)}}
+  // 전구 발밑 빛 웅덩이
+  if(gs>0){g.globalAlpha=.25*gs;g.fillStyle=rgb(glow);for(let i=0;i<3;i++){g.beginPath();g.ellipse(PCX,topY+3,bw*(.12-i*.035),5-i*1.4,0,0,7);g.fill()}g.globalAlpha=1}
+
+  ctx.imageSmoothingEnabled=false;ctx.drawImage(buf,0,0,bw,bh,0,0,W*dpr,H*dpr);
+
+  // 이름표
+  ctx.save();ctx.font=`bold ${13*dpr}px system-ui,sans-serif`;ctx.textAlign='center';
+  for(const l of labels){ctx.globalAlpha=Math.min(1,l.al*2);ctx.fillStyle='#000';ctx.fillText(l.t,l.x*dpr+2,l.y*dpr+2+14*dpr);ctx.fillStyle='#fff';ctx.fillText(l.t,l.x*dpr,l.y*dpr+14*dpr)}
+  ctx.restore();
+
+  // 전구
+  const base=(topY+1)*PX, dh=H*.3;
+  SCENES.forEach((s,i)=>drawWalker(s.spr,W/2,base,dh,w[i]));
 
   // 자막·점·힌트
-  const cap=CAPS.find(c=>p>=c[0]&&p<c[1]);
-  const key=cap?cap[2]:'';
-  if(key!==capKey){capKey=key;capEl.style.opacity=0;setTimeout(()=>{if(cap){capEl.children[0].textContent=cap[2];capEl.children[1].textContent=cap[3]}capEl.style.opacity=cap?1:0},cap?180:0)}
-  hint.style.opacity=p>.02?0:.8;
-  let active=0;DOTS.forEach((d,i)=>{if(p>=d[1]-.005)active=i});
-  [...dotsEl.children].forEach((el,i)=>el.classList.toggle('on',i===active));
+  const cur=Math.round(p*4),key=SCENES[cur].cap[0];
+  if(key!==capKey){capKey=key;capEl.style.opacity=0;setTimeout(()=>{capEl.children[0].textContent=SCENES[cur].cap[0];capEl.children[1].textContent=SCENES[cur].cap[1];capEl.style.opacity=1},capKey?180:0)}
+  hint.style.opacity=p>.02?0:.85;
+  [...dotsEl.children].forEach((el,i)=>el.classList.toggle('on',i===cur));
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
