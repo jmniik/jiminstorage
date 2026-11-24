@@ -196,7 +196,10 @@ addEventListener('resize',resize);resize();buildWorld();
 const dotsEl=document.getElementById('dots');
 // 네모 누르면 그 장면으로 (스크롤로 이동하니까 가는 동안 전구가 걸어감)
 SCENES.forEach((s,n)=>{const i=document.createElement('i');i.style.background=s.dot;i.tabIndex=0;i.setAttribute('role','button');
-  const go=()=>{const max=document.getElementById('scroll').offsetHeight-innerHeight;scrollTo({top:max*n/(SCENES.length-1),behavior:'smooth'})};
+  const go=()=>{const max=document.getElementById('scroll').offsetHeight-innerHeight,from=scrollY,to=max*n/(SCENES.length-1);
+    const dur=Math.min(2200,600+Math.abs(to-from)*.25),t0=performance.now();     // 멀수록 조금 더 오래(최대 2.2초)
+    const step=t=>{const k=Math.min(1,(t-t0)/dur),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;scrollTo(0,from+(to-from)*e);if(k<1)requestAnimationFrame(step)};
+    requestAnimationFrame(step)};
   i.addEventListener('click',go);i.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go()}});
   dotsEl.appendChild(i)});
 const capEl=document.getElementById('cap'),hint=document.getElementById('hint');
