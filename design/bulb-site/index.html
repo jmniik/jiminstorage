@@ -1,9 +1,6 @@
-<!doctype html>
-<html lang="ko">
-<head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>전구 · 첫 화면</title>
+<title>빛을 잃은 하루</title>
 <style>
   html,body{margin:0;background:#0e1024;color:#f4f1ea;font-family:system-ui,"Malgun Gothic","Apple SD Gothic Neo",sans-serif}
   #scroll{height:1000vh;position:relative}
@@ -12,19 +9,19 @@
   .cap{position:absolute;left:0;right:0;top:8vh;text-align:center;pointer-events:none;transition:opacity .35s}
   .cap b{display:block;font-size:clamp(22px,3.4vw,40px);letter-spacing:.04em;text-shadow:0 3px 0 #000}
   .cap span{display:block;margin-top:8px;font-size:clamp(13px,1.4vw,16px);opacity:.85;text-shadow:0 2px 0 #000}
-  .hint{position:absolute;left:50%;bottom:3vh;transform:translateX(-50%);font-size:13px;letter-spacing:.2em;transition:opacity .3s;text-shadow:0 2px 0 #000;animation:bob 1.4s steps(2) infinite}
+  .hint{position:absolute;left:50%;bottom:3vh;transform:translateX(-50%);text-align:center;white-space:nowrap;font-size:13px;letter-spacing:.2em;transition:opacity .3s;text-shadow:0 2px 0 #000;animation:bob 1.4s steps(2) infinite}
+  .hint em{display:block;font-style:normal;font-size:clamp(15px,1.6vw,18px);letter-spacing:.06em;margin-bottom:8px}
   @keyframes bob{50%{transform:translate(-50%,6px)}}
   .dots{position:absolute;right:22px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:12px}
   .dots i{width:10px;height:10px;outline:2px solid #000;transition:transform .2s}
   .dots i.on{transform:scale(1.5)}
 </style>
-</head>
-<body>
 <div id="scroll">
   <div id="stage">
     <canvas id="c"></canvas>
-    <div class="cap" id="cap"><b></b><span></span></div>
-    <div class="hint" id="hint">SCROLL ▼</div>
+    <div class="cap" id="cap"><b>빛을 잃은 하루</b></div>
+    <div class="cap" id="capEnd" style="opacity:0"><b>다시 켜지는 하루</b><span>빛의 숲에서 빛 조각 모으기</span></div>
+    <div class="hint" id="hint"><em>빛 조각 찾으러 가기</em>SCROLL ▼</div>
     <div class="dots" id="dots"></div>
   </div>
 </div>
@@ -47,11 +44,11 @@ const D=Math.PI/180;
    3 밝은 배경 · 구도청 · 전일빌딩 · 파란 전구
    4 노을 · ACC · 전일빌딩 · 노란 전구                    */
 const SCENES=[
-  {spr:'white', glow:null,          cap:['회색 도시','밤 · 흰 전구'],                 dot:'#cfcfd8'},
-  {spr:'red',   glow:[255,80,80],   cap:['빨간 전구','음식점 거리'],                   dot:'#ff4a4a'},
-  {spr:'green', glow:[100,255,100], cap:['초록 전구','ACC · 하늘마당'],                          dot:'#56e04a'},
-  {spr:'blue',  glow:[70,170,255],  cap:['파란 전구','구도청 · 전일빌딩'],              dot:'#3aa5ff'},
-  {spr:'yellow',glow:[255,210,100], cap:['노란 전구','노을 · ACC · 전일빌딩'],          dot:'#f5b942'},
+  {spr:'white', glow:null,          dot:'#cfcfd8'},
+  {spr:'red',   glow:[255,80,80],   dot:'#ff4a4a'},
+  {spr:'green', glow:[100,255,100], dot:'#56e04a'},
+  {spr:'blue',  glow:[70,170,255],  dot:'#3aa5ff'},
+  {spr:'yellow',glow:[255,210,100], dot:'#f5b942'},
 ];
 const STEP=72;                                 // 장면마다 행성 72°씩
 // 스크롤 0~1 → 장면 위치 0~4 (장면 i는 i/4 지점에서 정중앙)
@@ -197,7 +194,6 @@ addEventListener('resize',resize);resize();buildWorld();
 const dotsEl=document.getElementById('dots');
 SCENES.forEach(s=>{const i=document.createElement('i');i.style.background=s.dot;dotsEl.appendChild(i)});
 const capEl=document.getElementById('cap'),hint=document.getElementById('hint');
-let capKey='';
 
 function frame(){
   const max=document.getElementById('scroll').offsetHeight-H;
@@ -261,13 +257,12 @@ function frame(){
   SCENES.forEach((s,i)=>drawWalker(s.spr,W/2,base,dh,w[i]));
 
   // 자막·점·힌트
-  const cur=Math.round(p*4),key=SCENES[cur].cap[0];
-  if(key!==capKey){capKey=key;capEl.style.opacity=0;setTimeout(()=>{capEl.children[0].textContent=SCENES[cur].cap[0];capEl.children[1].textContent=SCENES[cur].cap[1];capEl.style.opacity=1},capKey?180:0)}
+  const cur=Math.round(p*4);
+  capEl.style.opacity=cur===0?1:0;              // 첫 장면(회색 도시)에만 제목
+  document.getElementById('capEnd').style.opacity=cur===4?1:0;   // 마지막 장면(노란 전구) 제목
   hint.style.opacity=p>.02?0:.85;
   [...dotsEl.children].forEach((el,i)=>el.classList.toggle('on',i===cur));
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
 </script>
-</body>
-</html>
