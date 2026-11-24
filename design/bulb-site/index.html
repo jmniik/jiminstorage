@@ -256,7 +256,7 @@ function frame(){
     const ts=COLORS.reduce((a,c,i)=>a+c.s*w[i],0);
     drawTop(gT,p,tint,ts);
     ctx.globalAlpha=aT;ctx.drawImage(tb,0,0,bw,bh,0,0,W*dpr,H*dpr);ctx.globalAlpha=1;
-    const th=Math.min(W,H)*.26*(1.25-.25*sm(.14,.22,p));
+    const th=Math.min(W,H)*.34*(1.25-.25*sm(.14,.22,p));
     COLORS.forEach((c,i)=>drawWalker(c.spr,W/2,H/2+th*.5,th,aT*w[i]));
     ctx.save();ctx.globalAlpha=aT;ctx.font=`bold ${13*dpr}px system-ui,sans-serif`;ctx.textAlign='center';
     for(const l of topLabels){ctx.fillStyle='#000';ctx.fillText(l.t,l.x*dpr+2,l.y*dpr+2);ctx.fillStyle='#fff';ctx.fillText(l.t,l.x*dpr,l.y*dpr)}
