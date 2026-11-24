@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>전구 · 첫 화면</title>
+<style>
+  html,body{margin:0;background:#16161c;color:#f4f1ea;font-family:system-ui,"Malgun Gothic","Apple SD Gothic Neo",sans-serif}
+  #scroll{height:1000vh;position:relative}
+  #stage{position:sticky;top:0;height:100vh;width:100%;overflow:hidden}
+  #c{display:block;width:100%;height:100%;image-rendering:pixelated}
+  .cap{position:absolute;left:0;right:0;top:7vh;text-align:center;pointer-events:none;transition:opacity .35s}
+  .cap b{display:block;font-size:clamp(22px,3.4vw,40px);letter-spacing:.04em;text-shadow:0 3px 0 #000}
+  .cap span{display:block;margin-top:8px;font-size:clamp(13px,1.4vw,16px);opacity:.8;text-shadow:0 2px 0 #000}
+  .hint{position:absolute;left:50%;bottom:3vh;transform:translateX(-50%);font-size:13px;letter-spacing:.2em;opacity:.8;transition:opacity .3s;animation:bob 1.4s steps(2) infinite}
+  @keyframes bob{50%{transform:translate(-50%,6px)}}
+  .dots{position:absolute;right:22px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:12px}
+  .dots i{width:10px;height:10px;background:#555;outline:2px solid #000;transition:transform .2s}
+  .dots i.on{transform:scale(1.5)}
+</style>
+</head>
+<body>
+<div id="scroll">
+  <div id="stage">
+    <canvas id="c"></canvas>
+    <div class="cap" id="cap"><b></b><span></span></div>
+    <div class="hint" id="hint">SCROLL ▼</div>
+    <div class="dots" id="dots"></div>
+  </div>
+</div>
+<script>
+/* ---------- 기본 ---------- */
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+const mk=()=>{const c=document.createElement('canvas');return [c,c.getContext('2d')]};
+const [fbG,gG]=mk(), [fbC,gC]=mk(), [tb,gT]=mk();
+const PX=4;                       // 화면 4px = 픽셀 1칸 (8bit 느낌)
+let W,H,dpr,bw,bh,gy,distMap,R;
+const sm=(a,b,x)=>{x=Math.min(1,Math.max(0,(x-a)/(b-a)));return x*x*(3-2*x)};
+const rng=s=>()=>((s=(s*1664525+1013904223)>>>0)/4294967296);
+const hash=(a,b)=>{let h=(a*374761393+b*668265263)^0x5bd1e995;h=Math.imul(h^(h>>>13),1274126177);return ((h^(h>>>16))>>>0)/4294967296};
+const rgb=(r,g,b)=>`rgb(${r|0},${g|0},${b|0})`;
+
+/* ---------- 스프라이트 ---------- */
+const SPR={};
+['white-front','white-top','red-top','green-top','blue-top','yellow-front'].forEach(n=>{const i=new Image();i.src=`img/${n}.png`;SPR[n]=i});
+// 몸통/팔/발 나누는 기준(이미지 높이·너비 비율)
+const CFG={front:{aT:.74,aB:.85,fY:.85,aL:.17,aR:.83},top:{aT:.56,aB:.72,fY:.84,aL:.115,aR:.885}};
+
+/* ---------- 스크롤 걷기 ---------- */
+let lastY=scrollY,phase=0,amp=0,lastMove=-1e9;
+addEventListener('scroll',()=>{const dy=scrollY-lastY;lastY=scrollY;phase+=Math.abs(dy)*.035;lastMove=performance.now()},{passive:true});
+
+function drawWalker(name,cx,baseY,dispH,alpha){
+  const img=SPR[name];if(!img.complete||!img.naturalWidth||alpha<=0)return;
+  const c=CFG[name.endsWith('front')?'front':'top'];
+  const w=img.naturalWidth,h=img.naturalHeight,k=dispH/h;
+  const s=Math.sin(phase)*amp;
+  const bob=Math.round(-Math.abs(s)*h*.035), lift=h*.06, sw=h*.04;
+  const aT=c.aT*h|0,aB=c.aB*h|0,fY=c.fY*h|0,aL=c.aL*w|0,aR=c.aR*w|0,hw=w/2|0;
+  ctx.save();ctx.globalAlpha=alpha;ctx.imageSmoothingEnabled=false;
+  // 그림자
+  ctx.fillStyle='rgba(0,0,0,.28)';ctx.beginPath();
+  ctx.ellipse(cx*dpr,baseY*dpr,dispH*.36*dpr*(1-Math.abs(s)*.12),dispH*.05*dpr,0,0,7);ctx.fill();
+  ctx.translate(cx*dpr,baseY*dpr);ctx.rotate(s*.05);ctx.scale(k*dpr,k*dpr);ctx.translate(-w/2,-h);
+  const P=(sx,sy,ww,hh,dy)=>{if(ww>0&&hh>0)ctx.drawImage(img,sx,sy,ww,hh,sx,sy+Math.round(dy),ww,hh)};
+  // 발: 좌우 번갈아 들기
+  P(0,fY,hw,h-fY,-Math.max(0,s)*lift);
+  P(hw,fY,w-hw,h-fY,-Math.max(0,-s)*lift);
+  // 몸통(살짝 통통 튐)
+  P(0,0,w,aT+1,bob);P(aL,aT,aR-aL,aB-aT+1,bob);P(0,aB,w,fY-aB+1,bob);
+  // 팔: 발과 반대로 흔들기
+  P(0,aT,aL,aB-aT,bob+s*sw);P(aR,aT,w-aR,aB-aT,bob-s*sw);
+  ctx.restore();
+}
+
+/* ---------- 정면 도시 (회색 / 마지막 컬러) ---------- */
+let sky=[];
+function buildSkyline(){
+  const r=rng(11);sky=[];
+  for(const layer of [0,1])for(const side of [-1,1]){
+    let x=side<0?Math.round(bw*(layer?.37:.42)):Math.round(bw*(layer?.63:.58));
+    while(side<0?x>-20:x<bw+20){
+      const w=7+(r()*13|0), h=Math.round(gy*(layer?.18+r()*.38:.35+r()*.4));
+      const bx=side<0?x-w:x;
+      sky.push({x:bx,w,h,layer,shade:r(),seed:r()*1e6|0,side});
+      x+=side*(w+(r()<.35?1:0));
+    }
+  }
+}
+function band(g,y0,y1,top,bot,step){
+  for(let y=y0;y<y1;y+=step){const t=(y-y0)/(y1-y0);g.fillStyle=rgb(top[0]+(bot[0]-top[0])*t,top[1]+(bot[1]-top[1])*t,top[2]+(bot[2]-top[2])*t);g.fillRect(0,y,bw,step)}
+}
+function windows(g,b,x,y,w,h,lit,litC,offC,seed){
+  for(let wy=y+3;wy<y+h-2;wy+=3)for(let wx=x+2;wx<x+w-1;wx+=3){
+    g.fillStyle=hash(seed+wx,wy)<lit?litC:offC;g.fillRect(wx,wy,1,1)}
+}
+function drawFront(g,color){
+  g.imageSmoothingEnabled=false;
+  if(color)band(g,0,gy,[36,26,70],[246,160,92],3);else band(g,0,gy,[34,34,40],[82,82,90],3);
+  // 땅/길
+  g.fillStyle=color?'#3c3044':'#2c2c31';g.fillRect(0,gy,bw,bh-gy);
+  g.fillStyle=color?'#55465c':'#3a3a40';g.fillRect(0,gy,bw,2);
+  for(let x=0;x<bw;x+=8){g.fillStyle=color?'#f0c060':'#55555c';g.fillRect(x,gy+((bh-gy)*.55|0),4,1)}
+  const pal=[[92,70,128],[128,78,112],[70,92,138],[150,96,86],[84,110,120]];
+  for(const b of sky){
+    const y=gy-b.h;
+    let base;
+    if(color){const p=pal[b.seed%pal.length];const f=b.layer?.75:1;base=p.map(v=>v*f)}
+    else{const v=(b.layer?72:56)+b.shade*30;base=[v,v,v+4]}
+    g.fillStyle=rgb(...base);g.fillRect(b.x,y,b.w,b.h);
+    g.fillStyle=rgb(...base.map(v=>v*.7));g.fillRect(b.x+b.w-1,y,1,b.h);
+    g.fillStyle=rgb(...base.map(v=>Math.min(255,v*1.25)));g.fillRect(b.x,y,b.w,1);
+    windows(g,b,b.x,y,b.w,b.h,color?.55:.12,color?'#ffd877':rgb(...base.map(v=>v*1.35)),rgb(...base.map(v=>v*.8)),b.seed);
+  }
+  if(color)landmarksFront(g);
+}
+let LM={};
+function landmarksFront(g){
+  // ACC (왼쪽): 낮고 넓은 유리 건물 + 옥상 정원
+  const aw=Math.round(bw*.17),ah=Math.round(gy*.2),ax=Math.round(bw*.4)-aw,ay=gy-ah;
+  g.fillStyle='#2f5f7a';g.fillRect(ax,ay,aw,ah);
+  for(let y=ay+2;y<gy;y+=3)for(let x=ax+1;x<ax+aw-1;x+=2){g.fillStyle=hash(x,y)<.6?'#ffe08a':'#6fb6d6';g.fillRect(x,y,1,2)}
+  g.fillStyle='#4f9a4a';g.fillRect(ax-1,ay-2,aw+2,2);
+  for(let x=ax;x<ax+aw;x+=5){g.fillStyle='#78c35e';g.fillRect(x,ay-4,3,2)}
+  // 옛 전남도청(앞 흰 건물)
+  const ow=Math.round(aw*.38),oh=Math.round(ah*.62),ox=ax+aw-ow-2,oy=gy-oh;
+  g.fillStyle='#ece6d8';g.fillRect(ox,oy,ow,oh);g.fillStyle='#8a7060';g.fillRect(ox-1,oy-1,ow+2,1);
+  for(let y=oy+2;y<gy-1;y+=3)for(let x=ox+1;x<ox+ow-1;x+=2){g.fillStyle='#5a4a48';g.fillRect(x,y,1,1)}
+  // 전일빌딩245 (오른쪽): 높은 격자 건물
+  const jw=Math.round(bw*.1),jh=Math.round(gy*.62),jx=Math.round(bw*.6),jy=gy-jh;
+  g.fillStyle='#e9e2d0';g.fillRect(jx,jy,jw,jh);
+  g.fillStyle='#b9ae98';g.fillRect(jx+jw-2,jy,2,jh);
+  g.fillStyle='#4a4a58';g.fillRect(jx,jy,jw,3);
+  for(let y=jy+5;y<gy-2;y+=4)for(let x=jx+2;x<jx+jw-3;x+=3){g.fillStyle=hash(x,y)<.55?'#ffd36a':'#7a8696';g.fillRect(x,y,2,2)}
+  LM.acc={x:(ax+aw/2)*PX,y:gy*PX};LM.jeonil={x:(jx+jw/2)*PX,y:gy*PX};
+  // 노랑 전구 뒤 빛 (8bit 동심원)
+  const cx=bw/2,cy=gy-(H*.34/PX)*.62;
+  for(let i=6;i>=1;i--){const r=i*(bw*.035);g.fillStyle=`rgba(255,214,110,${.07})`;
+    for(let y=-r;y<=r;y+=2){const xw=Math.round(Math.sqrt(r*r-y*y));g.fillRect(Math.round(cx-xw),Math.round(cy+y),xw*2,2)}}
+}
+
+/* ---------- 윗면: 움직이는 도시 ---------- */
+const C=18, HALF=7;
+function drawTop(g,p,tint,ts){
+  const cx=bw/2|0,cy=bh/2|0,L=bh*8,off=(p-.14)*L;
+  g.fillStyle='#3a3a40';g.fillRect(0,0,bw,bh);
+  // 중앙 길 점선
+  for(let y=0;y<bh;y++){if(((y-off)%10+10)%10<5){g.fillStyle='#77777e';g.fillRect(cx,y,1,1)}}
+  const jL=Math.round(-(0.73-.14)*L/C);           // 랜드마크 위치(파랑 구간에서 중앙 통과)
+  const j0=Math.floor((-cy-off)/C)-1, j1=Math.ceil((bh-cy-off)/C)+1;
+  for(let j=j0;j<=j1;j++){
+    const y=Math.round(cy+j*C+off);
+    for(const side of [-1,1])for(let i=0;i*C<bw/2+C;i++){
+      const x=side>0?cx+HALF+i*C:cx-HALF-(i+1)*C;
+      const near=j>=jL-1&&j<=jL+1;
+      if(near&&((side<0&&i<=4)||(side>0&&i<=1)))continue;
+      const h=hash(i*side+500,j);
+      if(h<.1){g.fillStyle='#45504a';g.fillRect(x+2,y+2,C-3,C-3);for(let t=0;t<4;t++){g.fillStyle='#55665a';g.fillRect(x+3+(hash(t,j+i)*(C-7)|0),y+3+(hash(j,t+i)*(C-7)|0),2,2)}continue}
+      const split=h>.6, v=96+hash(i,j*3+side)*64;
+      const rects=split?[[x+2,y+2,C-3,(C-4)/2|0],[x+2,y+2+((C-4)/2|0)+1,C-3,(C-4)/2|0]]:[[x+2,y+2,C-3,C-3]];
+      rects.forEach(([rx,ry,rw,rh],n)=>{
+        const vv=v+n*14;
+        g.fillStyle=rgb(vv*.55,vv*.55,vv*.6);g.fillRect(rx+1,ry+1,rw,rh);      // 그림자
+        g.fillStyle=rgb(vv,vv,vv+4);g.fillRect(rx,ry,rw,rh);
+        g.fillStyle=rgb(vv*1.18,vv*1.18,vv*1.2);g.fillRect(rx,ry,rw,1);
+        g.fillStyle=rgb(vv*.75,vv*.75,vv*.8);g.fillRect(rx+1+(hash(j,i+n)*(rw-4)|0),ry+1+(hash(i+n,j)*(rh-4)|0),2,2);
+      });
+    }
+  }
+  // 랜드마크: 5·18 민주광장 분수대 + ACC + 전일빌딩
+  const ly=Math.round(cy+(jL-1)*C+off), lh=3*C;
+  if(ly<bh&&ly+lh>0){
+    const px0=cx-HALF-2*C, pw=2*C;
+    g.fillStyle='#9a9690';g.fillRect(px0+1,ly+2,pw-2,lh-3);
+    for(let y=ly+2;y<ly+lh-1;y+=4)for(let x=px0+1;x<px0+pw-1;x+=4){g.fillStyle='#a8a49e';g.fillRect(x,y,2,2)}
+    const fx=px0+pw/2,fy=ly+lh/2;
+    for(let y=-8;y<=8;y++)for(let x=-8;x<=8;x++){const d=Math.hypot(x,y);if(d<=8){g.fillStyle=d>6.5?'#d6d2ca':d>2?'#5d8fb4':'#e8f4ff';g.fillRect(fx+x|0,fy+y|0,1,1)}}
+    const ax0=cx-HALF-5*C, aw=3*C;
+    g.fillStyle='#3d6a3a';g.fillRect(ax0+2,ly+2,aw-3,lh-3);
+    for(let y=ly+5;y<ly+lh-4;y+=6)for(let x=ax0+5;x<ax0+aw-5;x+=7){g.fillStyle='#a9cfe0';g.fillRect(x,y,4,3)}
+    const jx=cx+HALF+2, jw=Math.round(C*1.5), jy=ly+C/2|0, jh=Math.round(C*1.6);
+    g.fillStyle='#1f1f26';g.fillRect(jx+3,jy+3,jw,jh);
+    g.fillStyle='#d9d2bf';g.fillRect(jx,jy,jw,jh);g.fillStyle='#b5ad98';g.fillRect(jx+3,jy+3,jw-6,jh-6);
+    g.fillStyle='#d9d2bf';g.fillRect(jx+5,jy+5,4,3);
+    topLabels=[{t:'ACC',x:(ax0+aw/2)*PX,y:(ly+lh+6)*PX},{t:'민주광장',x:fx*PX,y:(ly+lh+6)*PX},{t:'전일빌딩245',x:(jx+jw/2)*PX,y:(jy+jh+7)*PX}];
+  }else topLabels=[];
+  // 빛의 원: 안쪽은 전구 색으로 물들고, 바깥은 어둡게
+  const id=g.getImageData(0,0,bw,bh),d=id.data;
+  for(let k=0,n=bw*bh;k<n;k++){
+    const dist=distMap[k],o=k*4;
+    if(dist<R){
+      let f=1-dist/R;f=Math.ceil(f*4)/4;           // 8bit 계단 그라데이션
+      for(let c=0;c<3;c++){const v=d[o+c];d[o+c]=Math.min(255,v*(1-ts)+v*tint[c]/170*ts+tint[c]*.22*f*ts+18*f)}
+    }else if(dist<R+1.6){d[o]=tint[0]*.9;d[o+1]=tint[1]*.9;d[o+2]=tint[2]*.9}
+    else{const m=(d[o]+d[o+1]+d[o+2])/3*.38;d[o]=d[o+1]=m;d[o+2]=m+3}
+  }
+  g.putImageData(id,0,0);
+}
+let topLabels=[];
+
+/* ---------- 장면 표 ---------- */
+// 0~.14 흰 전구 정면(줌아웃) · .14~.20 윗면 전환 · 흰 → .28 빨강 → .46 초록 → .64 파랑 · .82~.88 노랑 정면
+const COLORS=[
+  {spr:'white-top',tint:[225,225,235],s:.12},
+  {spr:'red-top',tint:[255,70,70],s:.85,at:.28},
+  {spr:'green-top',tint:[90,255,90],s:.85,at:.46},
+  {spr:'blue-top',tint:[60,165,255],s:.85,at:.64},
+];
+const CAPS=[
+  [0,.13,'회색 도시','빛을 잃은 흰 전구'],
+  [.19,.27,'흰 전구','회색 도시를 걷는다'],
+  [.29,.45,'① 빨강 전구','앞으로'],
+  [.47,.63,'② 초록 전구','앞으로'],
+  [.65,.81,'③ 파랑 전구','ACC · 전일빌딩 · 민주광장'],
+  [.88,1.01,'노랑 전구','ACC와 전일빌딩 사이에서'],
+];
+const DOTS=[['#9a9aa2',0],['#e9e9f0',.2],['#ff4a4a',.29],['#56e04a',.47],['#3aa5ff',.65],['#f5b942',.88]];
+const dotsEl=document.getElementById('dots');
+DOTS.forEach(([c])=>{const i=document.createElement('i');i.style.background=c;dotsEl.appendChild(i)});
+
+function resize(){
+  dpr=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;
+  cv.width=W*dpr;cv.height=H*dpr;
+  bw=Math.ceil(W/PX);bh=Math.ceil(H/PX);gy=Math.round(bh*.8);
+  for(const b of [fbG,fbC,tb]){b.width=bw;b.height=bh}
+  R=Math.min(bw,bh)*.44;distMap=new Float32Array(bw*bh);
+  for(let y=0;y<bh;y++)for(let x=0;x<bw;x++)distMap[y*bw+x]=Math.hypot(x-bw/2,y-bh/2);
+  buildSkyline();drawFront(gG,false);drawFront(gC,true);
+}
+addEventListener('resize',resize);resize();
+
+const capEl=document.getElementById('cap'),hint=document.getElementById('hint');
+let capKey='';
+function frame(){
+  const max=document.getElementById('scroll').offsetHeight-H;
+  const p=Math.min(1,Math.max(0,scrollY/max));
+  amp+=((performance.now()-lastMove<130?1:0)-amp)*.18;
+  if(amp<.02&&Math.sin(phase)!==0&&performance.now()-lastMove>400)amp=0;
+  ctx.imageSmoothingEnabled=false;ctx.fillStyle='#16161c';ctx.fillRect(0,0,cv.width,cv.height);
+
+  const aF=1-sm(.14,.2,p), aFinal=sm(.82,.88,p), aT=sm(.14,.2,p)*(1-aFinal);
+  const baseFront=gy*PX+H*.05, frontH=H*.36;
+
+  // 1) 흰 전구 정면 + 회색 도시 (가까이 → 줌아웃)
+  if(aF>0){
+    const z=1.7-.7*sm(0,.12,p)-.25*sm(.12,.2,p);
+    ctx.globalAlpha=aF;
+    ctx.drawImage(fbG,0,0,bw,bh,(W/2-W/2*z)*dpr,(baseFront-baseFront*z)*dpr,W*z*dpr,H*z*dpr);
+    ctx.globalAlpha=1;
+    drawWalker('white-front',W/2,baseFront,frontH*z,aF);
+  }
+  // 2) 윗면: 움직이는 도시 + 색 바뀌는 전구
+  if(aT>0){
+    const w=COLORS.map((c,i)=>{const on=i===0?1:sm(c.at-.02,c.at+.02,p);const next=COLORS[i+1];return on*(next?1-sm(next.at-.02,next.at+.02,p):1)});
+    const tint=[0,1,2].map(k=>COLORS.reduce((a,c,i)=>a+c.tint[k]*w[i],0));
+    const ts=COLORS.reduce((a,c,i)=>a+c.s*w[i],0);
+    drawTop(gT,p,tint,ts);
+    ctx.globalAlpha=aT;ctx.drawImage(tb,0,0,bw,bh,0,0,W*dpr,H*dpr);ctx.globalAlpha=1;
+    const th=Math.min(W,H)*.26*(1.25-.25*sm(.14,.22,p));
+    COLORS.forEach((c,i)=>drawWalker(c.spr,W/2,H/2+th*.5,th,aT*w[i]));
+    ctx.save();ctx.globalAlpha=aT;ctx.font=`bold ${13*dpr}px system-ui,sans-serif`;ctx.textAlign='center';
+    for(const l of topLabels){ctx.fillStyle='#000';ctx.fillText(l.t,l.x*dpr+2,l.y*dpr+2);ctx.fillStyle='#fff';ctx.fillText(l.t,l.x*dpr,l.y*dpr)}
+    ctx.restore();
+  }
+  // 3) 노랑 전구 정면 + ACC · 전일빌딩 (컬러 픽셀)
+  if(aFinal>0){
+    const z=1+.15*(1-sm(.82,.92,p));
+    ctx.globalAlpha=aFinal;
+    ctx.drawImage(fbC,0,0,bw,bh,(W/2-W/2*z)*dpr,(baseFront-baseFront*z)*dpr,W*z*dpr,H*z*dpr);
+    ctx.globalAlpha=1;
+    drawWalker('yellow-front',W/2,baseFront,frontH*z,aFinal);
+    ctx.save();ctx.globalAlpha=aFinal;ctx.font=`bold ${14*dpr}px system-ui,sans-serif`;ctx.textAlign='center';
+    for(const [t,l] of [['ACC',LM.acc],['전일빌딩245',LM.jeonil]]){ctx.fillStyle='#000';ctx.fillText(t,l.x*dpr+2,(l.y+26)*dpr+2);ctx.fillStyle='#ffe7a8';ctx.fillText(t,l.x*dpr,(l.y+26)*dpr)}
+    ctx.restore();
+  }
+
+  // 자막·점·힌트
+  const cap=CAPS.find(c=>p>=c[0]&&p<c[1]);
+  const key=cap?cap[2]:'';
+  if(key!==capKey){capKey=key;capEl.style.opacity=0;setTimeout(()=>{if(cap){capEl.children[0].textContent=cap[2];capEl.children[1].textContent=cap[3]}capEl.style.opacity=cap?1:0},cap?180:0)}
+  hint.style.opacity=p>.02?0:.8;
+  let active=0;DOTS.forEach((d,i)=>{if(p>=d[1]-.005)active=i});
+  [...dotsEl.children].forEach((el,i)=>el.classList.toggle('on',i===active));
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
