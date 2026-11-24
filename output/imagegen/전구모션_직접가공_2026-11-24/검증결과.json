@@ -1,0 +1,122 @@
+[
+  {
+    "color": "흰색",
+    "frames": 8,
+    "frame_ms": 120,
+    "loop_ms": 960,
+    "gif_size": [
+      448,
+      480
+    ],
+    "sheet_size": [
+      1792,
+      960
+    ],
+    "logical_cell": [
+      112,
+      120
+    ],
+    "pixel_block": "4x4",
+    "palette_colors": 34,
+    "alpha": "0 or 255",
+    "sheet_matches_gif": true,
+    "pixel_grid_verified": true,
+    "no_cropped_pixels": true
+  },
+  {
+    "color": "빨강",
+    "frames": 8,
+    "frame_ms": 120,
+    "loop_ms": 960,
+    "gif_size": [
+      448,
+      480
+    ],
+    "sheet_size": [
+      1792,
+      960
+    ],
+    "logical_cell": [
+      112,
+      120
+    ],
+    "pixel_block": "4x4",
+    "palette_colors": 34,
+    "alpha": "0 or 255",
+    "sheet_matches_gif": true,
+    "pixel_grid_verified": true,
+    "no_cropped_pixels": true
+  },
+  {
+    "color": "초록",
+    "frames": 8,
+    "frame_ms": 120,
+    "loop_ms": 960,
+    "gif_size": [
+      448,
+      480
+    ],
+    "sheet_size": [
+      1792,
+      960
+    ],
+    "logical_cell": [
+      112,
+      120
+    ],
+    "pixel_block": "4x4",
+    "palette_colors": 34,
+    "alpha": "0 or 255",
+    "sheet_matches_gif": true,
+    "pixel_grid_verified": true,
+    "no_cropped_pixels": true
+  },
+  {
+    "color": "파랑",
+    "frames": 8,
+    "frame_ms": 120,
+    "loop_ms": 960,
+    "gif_size": [
+      448,
+      480
+    ],
+    "sheet_size": [
+      1792,
+      960
+    ],
+    "logical_cell": [
+      112,
+      120
+    ],
+    "pixel_block": "4x4",
+    "palette_colors": 34,
+    "alpha": "0 or 255",
+    "sheet_matches_gif": true,
+    "pixel_grid_verified": true,
+    "no_cropped_pixels": true
+  },
+  {
+    "color": "노랑",
+    "frames": 8,
+    "frame_ms": 120,
+    "loop_ms": 960,
+    "gif_size": [
+      448,
+      480
+    ],
+    "sheet_size": [
+      1792,
+      960
+    ],
+    "logical_cell": [
+      112,
+      120
+    ],
+    "pixel_block": "4x4",
+    "palette_colors": 34,
+    "alpha": "0 or 255",
+    "sheet_matches_gif": true,
+    "pixel_grid_verified": true,
+    "no_cropped_pixels": true
+  }
+]
