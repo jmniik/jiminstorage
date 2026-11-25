@@ -42,7 +42,7 @@ h1,h2,h3,p{margin:0}h1,h2,h3{font-weight:900}
 .dots{position:absolute;right:18px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:4px}
 .dots button{width:26px;height:26px;border:0;background:none;padding:0;display:grid;place-items:center}
 .dots i{width:11px;height:11px;outline:2px solid #000;transition:transform .2s}.dots .on i{transform:scale(1.6)}
-.piece{position:absolute;left:0;top:0;width:76px;height:64px;margin:-64px 0 0 -38px;padding:0;border:0;background:none;opacity:0;visibility:hidden;transition:opacity .4s,visibility .4s}
+.piece{position:absolute;left:0;top:0;width:76px;height:64px;margin:-64px 0 0 -38px;padding:0;border:0;background:none;opacity:0;visibility:hidden;transition:opacity .4s}
 .piece.on{opacity:1;visibility:visible}
 .piece svg{width:100%;height:100%;animation:fl 1s steps(3) infinite alternate;filter:drop-shadow(0 0 9px var(--c))}
 .piece:hover svg{filter:drop-shadow(0 0 18px var(--c)) brightness(1.15)}
@@ -82,13 +82,22 @@ dialog::backdrop{background:transparent}
 .map li b{width:28px;height:28px;border-radius:50%;background:var(--c);border:3px solid #0a0a18;display:grid;place-items:center;font-size:14px;flex:none;color:#0a0a18}
 table{border-collapse:collapse;width:100%}td,th{border:2px solid #0a0a18;padding:8px 10px;text-align:left;word-break:break-all}
 th:last-child,td:last-child{white-space:nowrap}
-@media(max-width:760px){.two,.cards{grid-template-columns:1fr}.goods{grid-template-columns:1fr 1fr}.ask{left:50%;width:88%}.lamps{gap:7px}.lamps i{width:18px;height:18px}.dots{right:4px}}
+@media(max-width:760px){.two,.cards{grid-template-columns:1fr}.goods{grid-template-columns:1fr 1fr}.ask{left:50%;width:88%}
+ .dots{flex-direction:row;top:10px;right:10px;transform:none;align-items:center}.dots .home{margin:0 6px 0 0}.dots button{width:30px;height:40px}
+ .cap{top:72px}.cap p{white-space:normal;text-wrap:balance}
+ .piece{width:62px;height:52px;margin:-52px 0 0 -31px}
+ dialog{width:92vw;height:86vh}.bar{flex-wrap:wrap;gap:10px 12px;padding:12px 16px}.lamps{gap:8px;margin-right:auto}.lamps i{width:18px;height:18px}.bar #back{padding:0 9px;font-size:15px}.bar h2{order:3;flex:0 0 100%;padding:0;font-size:26px}
+ .cast{gap:4px}.cast figcaption{font-size:12px;line-height:1.3}
+ #wb table,#wb tbody,#wb tr,#wb td{display:block}#wb th{display:none}#wb td{border:0;padding:2px 0}#wb tr+tr{border:2px solid #0a0a18;padding:8px 10px;margin-bottom:10px}}
+@media(max-width:760px) and (orientation:portrait){#intro img{object-position:top}
+ .ask{left:0;top:0;transform:none;width:100%;height:100%}.ask h1{position:absolute;left:31%;right:27%;top:72vw;font-size:clamp(16px,4.7vw,22px);line-height:1.55;margin:0}.ask h1 .pc{display:none}
+ .ask div{position:absolute;left:0;right:0;top:min(120vw,100% - 212px);gap:14px}.ask .px{width:52vw;padding:.8em .4em;font-size:clamp(15px,4.3vw,19px)}}
 @media(prefers-reduced-motion:reduce){.piece svg,.hint{animation:none}}
 </style>
 
 <section class="screen" id="intro">
-  <img src="img/bulbs-lookdown.png" alt="다섯 색 전구들이 나를 내려다보고 있다">
-  <div class="ask"><h1>용사여 빛을 찾으러 가는<br>여정에 함께 해주세요..</h1>
+  <picture><source media="(max-width:760px) and (orientation:portrait)" srcset="img/bulbs-lookdown-m.png"><img src="img/bulbs-lookdown.png" alt="다섯 색 전구들이 나를 내려다보고 있다"></picture>
+  <div class="ask"><h1>용사여 빛을 찾으러 가는<br class="pc"> 여정에 함께 해주세요..</h1>
   <div><button class="px">귀여우니까 간다</button><button class="px">불쌍하니까 간다</button><button class="px">이상하니까 간다</button></div></div>
 </section>
 <section class="screen" id="burst" hidden>
@@ -124,8 +133,8 @@ const todo=s=>`<p class="todo">${s}</p>`;
 /* 빛 조각이 뜨는 건물: ph = 앞뒤 각도, lam = 좌우 각도 */
 const LM=[
  [{k:'char',n:'캐릭터 소개·스토리',ph:13,lam:-23},{k:'map',n:'지도',ph:14,lam:21}],
- [{k:'acc',n:'ACC 전시',ph:5,lam:-17},{k:'dochung',n:'옛 전남도청',ph:16,lam:-29},{k:'jeonil',n:'전일빌딩245',ph:13,lam:22}],
- [{k:'gusi',n:'구시청',ph:15,lam:-31},{k:'chung',n:'충장로',ph:5,lam:-15},{k:'dong',n:'동명동',ph:12,lam:23}],
+ [{k:'acc',n:'ACC 전시',ph:5,lam:-17},{k:'dochung',n:'옛 전남도청',ph:16,mph:37,lam:-29},{k:'jeonil',n:'전일빌딩245',ph:13,lam:22}],
+ [{k:'gusi',n:'구시청',ph:15,mph:42,lam:-31},{k:'chung',n:'충장로',ph:5,lam:-15},{k:'dong',n:'동명동',ph:12,lam:23}],
  [{k:'hanul',n:'하늘마당',ph:13,lam:-24},{k:'alley',n:'충장로 골목',ph:13,lam:24}],
  [{k:'pam',n:'팜플렛',ph:13,lam:-22},{k:'shop',n:'굿즈샵',ph:13,lam:22}],
 ];
@@ -230,9 +239,9 @@ addEventListener('scroll',()=>{const dy=scrollY-lastY;lastY=scrollY;phase+=Math.
 function walker(n,cx,by,dh,al){const im=SPR[n];if(!im.complete||!im.naturalWidth||al<=0)return;const k=dh/FR.body,f=amp>.5?Math.floor(phase/(Math.PI*2)*8)%8:FR.idle;
  ctx.globalAlpha=al;ctx.imageSmoothingEnabled=false;ctx.drawImage(im,f*FR.w,0,FR.w,FR.h,Math.round((cx-FR.w*k/2)*dpr),Math.round((by-FR.foot*k)*dpr),Math.round(FR.w*k*dpr),Math.round(FR.h*k*dpr));ctx.globalAlpha=1}
 
-let PR,PCX,PCY,STARS;
+let PR,PCX,PCY,STARS,LS;
 function resize(){dpr=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;cv.width=W*dpr;cv.height=H*dpr;bw=Math.max(1,Math.ceil(W/PX));bh=Math.max(1,Math.ceil(H/PX));buf.width=bw;buf.height=bh;
- PR=Math.round(Math.max(bw*.62,bh*.85));PCX=bw/2|0;PCY=Math.round(bh*.72)+PR;STARS=Array.from({length:Math.round(bw*bh/260)},(_,i)=>[hash(i,1)*bw|0,hash(1,i)*bh*.7|0,hash(i,i)])}
+ PR=Math.round(Math.max(bw*.62,bh*.85));LS=Math.min(1,.3*bw/(PR*Math.sin(23*D)));PCX=bw/2|0;PCY=Math.round(bh*.72)+PR;STARS=Array.from({length:Math.round(bw*bh/260)},(_,i)=>[hash(i,1)*bw|0,hash(1,i)*bh*.7|0,hash(i,i)])}
 addEventListener('resize',resize);resize();
 
 /* u: 장면 위치 0~4. 한 장면 = 글(0~.05) → 빛 조각(.05~.5, 천천히) → 다음으로 걷기(.5~1) */
@@ -265,8 +274,8 @@ function frame(){
  g.globalAlpha=1;
  const proj=(phi,lam)=>{const cl=Math.cos(lam);return{x:PCX+Math.sin(lam)*PR,y:PCY-PR*cl*Math.cos(phi),z:cl*Math.sin(phi),up:Math.hypot(Math.sin(lam),cl*Math.cos(phi)),ang:Math.atan2(Math.sin(lam),cl*Math.cos(phi))}};
  const labels=[],bk=[],fr=[],sc=Math.max(.55,Math.min(1.35,bw/340)),seen=new Set();
- for(const b of WORLD){const phi=rot-b.th;if(phi<-35||phi>70)continue;const q=proj(phi*D,b.lam*D);q.b=b;q.phi=phi;(q.z<0?bk:fr).push(q)}
- const drawB=q=>{const b=q.b,k=(b.label?1.75*sc:1.6)*(1+.8*Math.max(0,q.z)),sw=Math.round(b.s.width*k),sh=Math.max(1,Math.round(b.s.height*k*q.up)),an=b.label?q.ang*.45:q.ang;
+ for(const b of WORLD){const nar=LS<.8,p0=rot-b.th,phi=p0+(nar&&b.m&&b.m.mph?(b.m.mph-b.m.ph)*sm(0,b.m.ph-2,p0):0);if(phi<-35||phi>70)continue;let lam=b.lam*LS*D;if(nar&&b.m)lam=Math.sign(lam)*Math.asin(.31*bw/PR);const q=proj(phi*D,lam);q.b=b;q.phi=phi;(q.z<0?bk:fr).push(q)}
+ const drawB=q=>{const b=q.b,k=LS<.8?Math.min((b.label?1.2:.95)*(1+.4*Math.max(0,q.z)),b.label?.33*bw/b.s.width:9):(b.label?1.75*sc:1.6)*(1+.8*Math.max(0,q.z)),sw=Math.round(b.s.width*k),sh=Math.max(1,Math.round(b.s.height*k*q.up)),an=b.label?q.ang*.45:q.ang;
   g.save();g.translate(q.x,q.y);g.rotate(an);g.drawImage(b.s,Math.round(-sw/2),-sh+2,sw,sh);g.restore();
   if(b.label){if(q.phi>2&&q.y<bh)labels.push({t:b.label,x:q.x*PX,y:q.y*PX,al:Math.min(1,(q.phi-2)/3)});
    const f=u-b.i,on=b.i===4?u>3.9:f>=TXT&&f<HOLD+.06;seen.add(b.m);b.m.el.classList.toggle('on',on);
