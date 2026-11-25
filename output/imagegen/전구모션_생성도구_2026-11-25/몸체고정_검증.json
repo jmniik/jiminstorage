@@ -1,0 +1,146 @@
+[
+  {
+    "color": "흰색",
+    "style": "픽셀",
+    "expression": 1,
+    "front_body_sha256": "17e5401cf2e3191b27f1ba38f3f77199e2df06295661b120941082fcd5a03010",
+    "body_scale": 1,
+    "body_rotation": 0,
+    "filament_redrawn": false
+  },
+  {
+    "color": "빨강",
+    "style": "픽셀",
+    "expression": 1,
+    "front_body_sha256": "ed74f4347dfa98e659c4932ed70e49597302861870ea5f4545ffb7402a2c227d",
+    "body_scale": 1,
+    "body_rotation": 0,
+    "filament_redrawn": false
+  },
+  {
+    "color": "빨강",
+    "style": "픽셀",
+    "expression": 2,
+    "front_body_sha256": "bff24e7a0ce5f346702e19aaa7831defc57e9531c437191b79383bcf80e1eb0f",
+    "body_scale": 1,
+    "body_rotation": 0,
+    "filament_redrawn": false
+  },
+  {
+    "color": "초록",
+    "style": "픽셀",
+    "expression": 1,
+    "front_body_sha256": "55404d780514dbb780b2c089d9c692fa4a327710e25d78281be0357447709387",
+    "body_scale": 1,
+    "body_rotation": 0,
+    "filament_redrawn": false
+  },
+  {
+    "color": "초록",
+    "style": "픽셀",
+    "expression": 2,
+    "front_body_sha256": "82e1460bdb177318f0ab7bbe14e78693848f27216c059d56d78708a540f45e6d",
+    "body_scale": 1,
+    "body_rotation": 0,
+    "filament_redrawn": false
+  },
+  {
+    "color": "파랑",
+    "style": "픽셀",
+    "expression": 1,
+    "front_body_sha256": "07d4bdc8b2a7b114dc098b5ed82d8385d9ae0476765645ff999f059c7b098402",
+    "body_scale": 1,
+    "body_rotation": 0,
+    "filament_redrawn": false
+  },
+  {
+    "color": "파랑",
+    "style": "픽셀",
+    "expression": 2,
+    "front_body_sha256": "338aeb039f2e95a49200f6a09cabd6fcd5b3c5bad6a6baf3657f69b76cbb7ba8",
+    "body_scale": 1,
+    "body_rotation": 0,
+    "filament_redrawn": false
+  },
+  {
+    "color": "노랑",
+    "style": "픽셀",
+    "expression": 1,
+    "front_body_sha256": "fe5c49325d24da9a5fd1b2db4413279a2f799cd9a7d3afa8865e66733bd175d9",
+    "body_scale": 1,
+    "body_rotation": 0,
+    "filament_redrawn": false
+  },
+  {
+    "color": "흰색",
+    "style": "기본",
+    "expression": 1,
+    "front_body_sha256": "3db40fb9dfdf7aeaa267b2e1e5045192f4dd49e50868b8ad7d6a1e1d7758f95f",
+    "body_scale": 1,
+    "body_rotation": 0,
+    "filament_redrawn": false
+  },
+  {
+    "color": "빨강",
+    "style": "기본",
+    "expression": 1,
+    "front_body_sha256": "94fe25c476a51f1773e47f9fe75020af93ddc3e4ba449009599f96d36ecb6781",
+    "body_scale": 1,
+    "body_rotation": 0,
+    "filament_redrawn": false
+  },
+  {
+    "color": "빨강",
+    "style": "기본",
+    "expression": 2,
+    "front_body_sha256": "a4cf9760a08d3cdb3a8b5f6d0ce6c74912215d84ec9603662a92eec3bc8a526c",
+    "body_scale": 1,
+    "body_rotation": 0,
+    "filament_redrawn": false
+  },
+  {
+    "color": "초록",
+    "style": "기본",
+    "expression": 1,
+    "front_body_sha256": "b9516386c441ea6af06d4eb24addbeac8c230b19856a78ad8b71509a3a65ef35",
+    "body_scale": 1,
+    "body_rotation": 0,
+    "filament_redrawn": false
+  },
+  {
+    "color": "초록",
+    "style": "기본",
+    "expression": 2,
+    "front_body_sha256": "0dfa364fc7883928a1e08860dabbf930930abe998745e3958d537ab56b279684",
+    "body_scale": 1,
+    "body_rotation": 0,
+    "filament_redrawn": false
+  },
+  {
+    "color": "파랑",
+    "style": "기본",
+    "expression": 1,
+    "front_body_sha256": "c182438f2f3ad07fe7cff6aee763b3504cb80108410459178ca5c94743766488",
+    "body_scale": 1,
+    "body_rotation": 0,
+    "filament_redrawn": false
+  },
+  {
+    "color": "파랑",
+    "style": "기본",
+    "expression": 2,
+    "front_body_sha256": "01cfcb120b88b1f011f02ed54a0036d77f1ce95f90630f7571a20bacaed0b6ae",
+    "body_scale": 1,
+    "body_rotation": 0,
+    "filament_redrawn": false
+  },
+  {
+    "color": "노랑",
+    "style": "기본",
+    "expression": 1,
+    "front_body_sha256": "db75d3cfc897a881ba7220d5b8bed0403719edf9984c38db15355da098e94e0e",
+    "body_scale": 1,
+    "body_rotation": 0,
+    "filament_redrawn": false
+  }
+]
