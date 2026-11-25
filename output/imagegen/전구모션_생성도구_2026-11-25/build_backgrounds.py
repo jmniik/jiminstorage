@@ -27,6 +27,36 @@ def foreground(path,pixel):
     if pixel:ar[:,:,3]=np.where(ar[:,:,3]>=cutoff,255,0)
     return Image.fromarray(ar)
 
+def alternate_brows(front,pixel):
+    out=front.copy(); w,h=front.size
+    patches=[(.465,.190,.523,.239,-25),(.544,.190,.608,.239,25),
+             (.035,.845,.119,.909,-25),(.126,.883,.204,.951,25),
+             (.786,.860,.855,.950,-25),(.877,.835,.950,.919,25)]
+    for x0,y0,x1,y1,angle in patches:
+        box=(round(x0*w),round(y0*h),round(x1*w),round(y1*h))
+        patch=out.crop(box); ar=np.array(patch);rgb=ar[:,:,:3].astype(int)
+        dark=(rgb.max(axis=2)<90)&(ar[:,:,3]>128)
+        comps=[]
+        for pts in a.connected(dark):
+            yy,xx=np.array(pts).T
+            if len(pts)>=3 and xx.max()-xx.min()>=max(2,yy.max()-yy.min()):
+                comps.append(pts)
+        if not comps:continue
+        pts=max(comps,key=len); yy,xx=np.array(pts).T
+        mask=np.zeros(dark.shape,dtype='uint8');mask[yy,xx]=255
+        mask=Image.fromarray(mask).filter(ImageFilter.MaxFilter(3))
+        skin=(rgb[:,:,0]>180)&(rgb[:,:,1]>160)&(rgb[:,:,2]>130)&(ar[:,:,3]>128)
+        if not skin.any():continue
+        color=tuple(int(v) for v in np.median(rgb[skin],axis=0))+(255,)
+        fill=Image.new('RGBA',patch.size,color)
+        out.paste(fill,(box[0],box[1]),mask)
+        ink=Image.new('RGBA',patch.size,(0,0,0,255));ink.putalpha(mask)
+        ink=a.trim(ink)
+        ink=ink.rotate(angle,resample=Image.Resampling.NEAREST if pixel else Image.Resampling.BICUBIC,expand=True)
+        center=(box[0]+(int(xx.min())+int(xx.max()))/2,box[1]+(int(yy.min())+int(yy.max()))/2)
+        out.alpha_composite(ink,(round(center[0]-ink.width/2),round(center[1]-ink.height/2)))
+    return out
+
 def run():
     base=fit(a.load(HERE/'하늘_기본원화.png')).convert('RGB')
     files=[]
@@ -39,7 +69,10 @@ def run():
             alpha=front.getchannel('A')
             front=front.convert('RGB').quantize(colors=128,dither=Image.Dither.NONE).convert('RGBA')
             front.putalpha(alpha)
+            ar=np.array(front); dark=(ar[:,:,:3].max(axis=2)<60)&(ar[:,:,3]>0);ar[dark,:3]=0
+            front=Image.fromarray(ar)
         else:sky=base.convert('RGBA')
+        alt=alternate_brows(front,pixel)
         bg_name=f'5색_{style}_배경만_팀원기준_2026-11-25.png'
         shown=a.resize(sky,SIZE,True) if pixel else sky
         shown.convert('RGB').save(ROOT/bg_name,compress_level=1);files.append(bg_name)
@@ -47,6 +80,9 @@ def run():
         wall_name=f'5색_{style}_내려다보기_배경화면_팀원기준_2026-11-25.png'
         shown=a.resize(result,SIZE,True) if pixel else result
         shown.convert('RGB').save(ROOT/wall_name,compress_level=1);files.append(wall_name)
+        alternate=sky.copy();alternate.alpha_composite(alt)
+        name=f'5색_{style}_표정2조합_내려다보기_배경화면_팀원기준_2026-11-25.png'
+        (a.resize(alternate,SIZE,True) if pixel else alternate).convert('RGB').save(ROOT/name,compress_level=1);files.append(name)
         # Assign complete connected components (including detached screw caps)
         # to one of the five requested original edge positions.
         mask=np.array(front.getchannel('A').resize(SMALL,Image.Resampling.NEAREST))>=128
@@ -59,18 +95,26 @@ def run():
             cx,cy=xx.mean()/480,yy.mean()/270
             color=min(ANCHORS,key=lambda c:(cx-ANCHORS[c][0])**2+(cy-ANCHORS[c][1])**2)
             pixels[color][yy,xx]=255
-        poses=[]
+        poses=[];alternates=[]
         for color in a.COLORS:
             mask=Image.fromarray(pixels[color])
             assert mask.getbbox() is not None,f'Missing edge character: {style}/{color}'
             if not pixel:
-                mask=mask.resize(SIZE,Image.Resampling.NEAREST).filter(ImageFilter.MaxFilter(17))
+                mask=mask.filter(ImageFilter.MaxFilter(3)).resize(SIZE,Image.Resampling.NEAREST)
             pose=front.copy()
             pose.putalpha(Image.fromarray(np.minimum(np.array(front.getchannel('A')),np.array(mask))))
             pose=a.trim(pose)
             if pixel:pose=a.resize(pose,(pose.width*8,pose.height*8),True)
             pose_name=f'{color}_{style}_내려다보기_포즈_팀원기준_2026-11-25.png'
             pose.save(ROOT/pose_name,compress_level=1);files.append(pose_name)
+            if color in ['빨강','초록','파랑']:
+                other=alt.copy()
+                other.putalpha(Image.fromarray(np.minimum(np.array(alt.getchannel('A')),np.array(mask))))
+                other=a.trim(other)
+                if pixel:other=a.resize(other,(other.width*8,other.height*8),True)
+                other_name=f'{color}_{style}_표정2_내려다보기_포즈_팀원기준_2026-11-25.png'
+                other.save(ROOT/other_name,compress_level=1);files.append(other_name)
+                alternates.append(other)
             cell=Image.new('RGBA',(896,896))
             if pixel:
                 native=pose.resize((pose.width//8,pose.height//8),Image.Resampling.NEAREST)
@@ -84,6 +128,19 @@ def run():
                 xy=((896-pose.width)//2,(896-pose.height)//2)
             cell.alpha_composite(pose,xy)
             poses.append(cell)
+        for pose in alternates:
+            cell=Image.new('RGBA',(896,896))
+            if pixel:
+                native=pose.resize((pose.width//8,pose.height//8),Image.Resampling.NEAREST)
+                factor=min(1,98/native.width,98/native.height)
+                native=a.resize(native,(native.width*factor,native.height*factor),True)
+                pose=a.resize(native,(native.width*8,native.height*8),True)
+                xy=(((112-native.width)//2)*8,((112-native.height)//2)*8)
+            else:
+                factor=min(784/pose.width,784/pose.height)
+                pose=a.resize(pose,(pose.width*factor,pose.height*factor),False)
+                xy=((896-pose.width)//2,(896-pose.height)//2)
+            cell.alpha_composite(pose,xy);poses.append(cell)
         atlas_name=f'5색_{style}_내려다보기_포즈시트_팀원기준_2026-11-25.png'
         a.sheet(poses,4).save(ROOT/atlas_name,compress_level=1);files.append(atlas_name)
     for name in files:

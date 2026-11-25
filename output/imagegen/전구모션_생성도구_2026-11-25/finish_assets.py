@@ -58,38 +58,44 @@ def repair_directions():
     jobs=[(pixel,style,color,expression) for pixel,style in [(True,'픽셀'),(False,'기본')] for color in a.COLORS for expression in ([1,2] if color in ['빨강','초록','파랑'] else [1])]
     with ThreadPoolExecutor(max_workers=3) as pool:list(pool.map(repair_one,jobs))
 
+def export_one_gif(record):
+    name=record['file'].replace('_모션시트_팀원기준_2026-11-25.png','')
+    frames=read_frames(name)
+    atlas=Image.new('RGB',(448*8,640))
+    for i,f in enumerate(frames):atlas.paste(f.convert('RGB'),(448*i,0))
+    palette=atlas.quantize(colors=255,method=Image.Quantize.MEDIANCUT)
+    indexed=[]
+    for f in frames:
+        ind=f.convert('RGB').quantize(palette=palette,dither=Image.Dither.NONE)
+        ind.paste(255,mask=f.getchannel('A').point(lambda v:255 if v==0 else 0))
+        ind.info['transparency']=255
+        indexed.append(ind)
+    dest=ROOT/(name+'_180ms_팀원기준_2026-11-25.gif')
+    # Explicit full-frame writer retains all 8 frames, including held poses.
+    with dest.open('wb') as fp:
+        for block in GifImagePlugin._get_global_header(indexed[0],{'loop':0,'transparency':255}):fp.write(block)
+        for ind in indexed:
+            GifImagePlugin._write_frame_data(fp,ind,(0,0),{'duration':180,'disposal':2,'transparency':255})
+        fp.write(b';')
+    with Image.open(dest) as check:
+        assert check.n_frames==8 and check.info['loop']==0
+        for i,f in enumerate(ImageSequence.Iterator(check)):
+            assert f.info['duration']==180
+            rgba=f.convert('RGBA')
+            assert set(rgba.getchannel('A').get_flattened_data())=={0,255}
+            assert rgba.tobytes()==rgba.resize((112,160),Image.Resampling.NEAREST).resize((448,640),Image.Resampling.NEAREST).tobytes()
+            assert rgba.getchannel('A').getbbox() is not None
+    return {'file':dest.name,'frames':8,'frame_ms':180,'loop_ms':1440,'transparent':True,'pixel_grid':'4x4'}
+
 def export_gifs(records):
-    assert (HERE/'배경단계_완료.json').exists(),'All background PNGs must precede GIF encoding'
+    from concurrent.futures import ThreadPoolExecutor
+    assert (HERE/'배경단계_완료.json').exists()
+    jobs=[r for r in records if r['kind']=='motion' and r['style']=='픽셀']
     reports=[]
-    for record in records:
-        if record['kind']!='motion' or record['style']!='픽셀':continue
-        name=record['file'].replace('_모션시트_팀원기준_2026-11-25.png','')
-        frames=read_frames(name)
-        atlas=Image.new('RGB',(448*8,640))
-        for i,f in enumerate(frames):atlas.paste(f.convert('RGB'),(448*i,0))
-        palette=atlas.quantize(colors=255,method=Image.Quantize.MEDIANCUT)
-        indexed=[]
-        for f in frames:
-            ind=f.convert('RGB').quantize(palette=palette,dither=Image.Dither.NONE)
-            ind.paste(255,mask=f.getchannel('A').point(lambda v:255 if v==0 else 0))
-            ind.info['transparency']=255
-            indexed.append(ind)
-        dest=ROOT/(name+'_180ms_팀원기준_2026-11-25.gif')
-        # Explicit full-frame writer retains all 8 frames, including held poses.
-        with dest.open('wb') as fp:
-            for block in GifImagePlugin._get_global_header(indexed[0],{'loop':0,'transparency':255}):fp.write(block)
-            for ind in indexed:
-                GifImagePlugin._write_frame_data(fp,ind,(0,0),{'duration':180,'disposal':2,'transparency':255})
-            fp.write(b';')
-        with Image.open(dest) as check:
-            assert check.n_frames==8 and check.info['loop']==0
-            for i,f in enumerate(ImageSequence.Iterator(check)):
-                assert f.info['duration']==180
-                rgba=f.convert('RGBA')
-                assert set(rgba.getchannel('A').get_flattened_data())=={0,255}
-                assert rgba.tobytes()==rgba.resize((112,160),Image.Resampling.NEAREST).resize((448,640),Image.Resampling.NEAREST).tobytes()
-                assert rgba.getchannel('A').getbbox() is not None
-        reports.append({'file':dest.name,'frames':8,'frame_ms':180,'loop_ms':1440,'transparent':True,'pixel_grid':'4x4'})
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        for result in pool.map(export_one_gif,jobs):
+            reports.append(result)
+            if len(reports)%15==0:print('GIF_VERIFIED',len(reports),flush=True)
     return reports
 
 def verify_png(records):
@@ -130,7 +136,11 @@ def preview():
 
 def package():
     records=json.loads((HERE/'PNG_산출물.json').read_text(encoding='utf-8'))
-    verified=verify_png(records)
+    certificate=HERE/'PNG_검증완료.json'
+    if certificate.exists():
+        verified=json.loads(certificate.read_text(encoding='utf-8'))['files']
+        assert set(verified)=={r['file'] for r in records}
+    else:verified=verify_png(records)
     gifreports=export_gifs(records)
     preview_path=preview()
     backgrounds=json.loads((HERE/'배경단계_완료.json').read_text(encoding='utf-8'))
@@ -152,7 +162,7 @@ def package():
         '정면은 팀원 원본을 활용하고, 측면·후면·윗면은 생성 도구 원화를 사용했습니다.\n'
         '픽셀 GIF는 반투명 표현을 지원하지 않아 발광 PNG의 반투명 후광을 불투명 픽셀 띠로 인코딩합니다.\n'
         '상세 파일별 색상/스타일/표정/상태/동작은 JSON 색인을 확인하세요.\n',encoding='utf-8')
-    paths=[ROOT/r['file'] for r in records]+[ROOT/r['file'] for r in gifreports]+[ROOT/x for x in backgrounds['files']]+[index,readme,preview_path]
+    paths=[ROOT/r['file'] for r in records]+[ROOT/r['file'] for r in gifreports]+[ROOT/x for x in backgrounds['files']]+[index,readme,preview_path,ROOT/'전구_팀원기준_생성프롬프트_2026-11-25.json']
     bundle=ROOT/'전구_기본_픽셀_전체_팀원기준_2026-11-25.zip'
     with zipfile.ZipFile(bundle,'w',zipfile.ZIP_DEFLATED,compresslevel=5) as z:
         for p in paths:z.write(p,p.name)
