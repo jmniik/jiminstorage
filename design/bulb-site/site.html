@@ -34,8 +34,7 @@ h1,h2,h3,p{margin:0}h1,h2,h3{font-weight:900}
 #scroll{height:820vh;position:relative}
 #stage{position:sticky;top:0;height:100vh;overflow:hidden}
 #c{display:block;width:100%;height:100%}
-.cap{position:absolute;left:6%;right:6%;top:9vh;text-align:center;pointer-events:none;opacity:0;transition:opacity .35s;text-shadow:0 2px 0 #0a0a18,2px 0 0 #0a0a18,-2px 0 0 #0a0a18,0 -2px 0 #0a0a18}
-.cap.on{opacity:1}
+.cap{position:absolute;left:6%;right:6%;top:9vh;text-align:center;pointer-events:none;opacity:0;text-shadow:0 2px 0 #0a0a18,2px 0 0 #0a0a18,-2px 0 0 #0a0a18,0 -2px 0 #0a0a18}
 .cap h2{font-size:clamp(30px,4.6vw,62px);letter-spacing:.1em;text-shadow:0 3px 0 #000}
 .cap p{margin:14px auto 0;font-size:clamp(16px,1.6vw,22px);line-height:1.65;letter-spacing:.04em;max-width:36em;white-space:pre-line}
 .hint{position:absolute;left:50%;bottom:2.5vh;transform:translateX(-50%);font-size:15px;letter-spacing:.14em;text-shadow:0 2px 0 #000;animation:bob 1.4s steps(2) infinite;white-space:nowrap;pointer-events:none}
@@ -116,7 +115,7 @@ const calm=matchMedia('(prefers-reduced-motion:reduce)').matches;
 /* ===== 글: 여기만 고치면 됨. 전구 순서 흰 → 파 → 빨 → 초 → 노 ===== */
 const SCENES=[
  {spr:'white',glow:null,c:'#f4f3ff',t:'빛을 잃은 하루',p:'바쁘게 살다 나를 돌보지 못한 전구가 빛을 잃었어요.\n다시 켜지려고 빛고을 광주로 빛 조각을 찾으러 가요.\n혼자서는 다시 빛날 수 없어서 당신의 도움이 필요해요.'},
- {spr:'blue',hide:true,glow:null,c:'#3aa5ff',t:'보고, 파란 빛',p:'ACC 전시와 옛 전남도청, 전일빌딩245를\n천천히 둘러보며 파란 빛 조각을 찾아요.'},
+ {spr:'blue',glow:[70,170,255],c:'#3aa5ff',t:'보고, 파란 빛',p:'ACC 전시와 옛 전남도청, 전일빌딩245를\n천천히 둘러보며 파란 빛 조각을 찾아요.'},
  {spr:'red',glow:[255,80,80],c:'#ff4a4a',t:'먹고, 빨간 빛',p:'충장로와 구시청, 동명동에서\n한 끼를 천천히 즐기며 빨간 빛 조각을 찾아요.'},
  {spr:'green',glow:[100,255,100],c:'#56e04a',t:'걷고, 초록 빛',p:'충장로 골목을 걷고 하늘마당에 누워 쉬며\n초록 빛 조각을 찾아요.'},
  {spr:'yellow',glow:[255,210,100],c:'#ffc53a',t:'빛이 완성됐어요',p:'빨강·초록·파랑 빛이 모여 노란 빛이 켜졌어요.\n함께 걸어 줘서 고마워요.'},
@@ -286,8 +285,8 @@ function frame(){
  ctx.imageSmoothingEnabled=false;ctx.drawImage(buf,0,0,bw,bh,0,0,W*dpr,H*dpr);
  ctx.font=`600 ${18*dpr}px Pretendard,sans-serif`;ctx.textAlign='center';
  for(const l of labels){ctx.globalAlpha=l.al;const y=Math.min(H-8,l.y+20);ctx.lineWidth=5*dpr;ctx.lineJoin='round';ctx.strokeStyle='#0a0a18';ctx.strokeText(l.t,l.x*dpr,y*dpr);ctx.fillStyle='#fff';ctx.fillText(l.t,l.x*dpr,y*dpr)}ctx.globalAlpha=1;
- SCENES.forEach((s,i)=>{if(!s.hide)walker(s.spr,W/2,(standY+1)*PX,dh,w[i])});   // hide: 5·18 장소 장면은 전구 없이
- [...$('caps').children].forEach((e,i)=>e.classList.toggle('on',i===4?u>3.85:i?u>i-.15&&u<i+TXT:u<TXT));
+ SCENES.forEach((s,i)=>{if(!s.hide)walker(s.spr,W/2,(standY+1)*PX,dh,w[i])});
+ [...$('caps').children].forEach((e,i)=>{e.style.opacity=(i?sm(i-.25,i-.19,u):1)*(i<4?1-sm(i+.03,i+.06,u):1)});
  const f=u-Math.floor(u);$('hint').textContent=u<TXT?'빛 조각 찾으러 가기  SCROLL ▼':f>=TXT&&f<HOLD&&u<4?'빛 조각을 눌러 보세요':'';
  $('srcBtn').classList.toggle('on',u>3.9);
  [...$('dots').children].slice(1).forEach((e,i)=>e.classList.toggle('on',i===cur));
