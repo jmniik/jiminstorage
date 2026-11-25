@@ -336,25 +336,38 @@ history.scrollRestoration='manual';
 document.querySelectorAll('.ask button').forEach(b=>b.onclick=startBurst);
 function startBurst(){if($('intro').classList.contains('out'))return;
  $('burst').hidden=false;$('burst').style.zIndex=9;$('intro').classList.add('out');setTimeout(()=>{$('intro').hidden=true},750);
- const c=$('bc'),x=c.getContext('2d'),t0=performance.now()+(calm?-9000:600);let shown=false;
+ const c=$('bc'),x=c.getContext('2d',{willReadFrequently:true});let dist,gold;const t0=performance.now()+(calm?-9000:600);let shown=false;
  const COL=[[255,60,60],[70,255,80],[60,130,255]],FLY=1.7,POP=2.15;
+ const BAND=[.26,.42,.62,.86],GOLD2=[[255,238,170],[255,224,122],[255,206,78],[250,186,52],[244,164,36]];
+ const GOLD=[[255,243,192],[255,229,138],[255,209,84],[251,186,54],[243,163,36]];   // 가운데 → 가장자리 색
  (function loop(now){if($('burst').hidden)return;requestAnimationFrame(loop);
   const w=Math.ceil(innerWidth/PX),h=Math.ceil(innerHeight/PX);if(c.width!==w||c.height!==h){c.width=w;c.height=h}
   const t=Math.max(0,(now-t0)/1000),cx=w/2,cy=h/2,R=Math.hypot(cx,cy);
   x.globalCompositeOperation='source-over';x.globalAlpha=1;x.fillStyle='#0c0e26';x.fillRect(0,0,w,h);
-  x.fillStyle='#fff';for(let i=0;i<w*h/300;i++){x.globalAlpha=.3+.5*hash(i,9);x.fillRect(hash(i,4)*w|0,hash(4,i)*h|0,1,1)}x.globalAlpha=1;
+  x.fillStyle='#fff';if(t<POP+2)for(let i=0;i<w*h/300;i++){x.globalAlpha=.3+.5*hash(i,9);x.fillRect(hash(i,4)*w|0,hash(4,i)*h|0,1,1)}x.globalAlpha=1;
   if(t<POP){x.globalCompositeOperation='lighter';
    [[-12,h*.18],[w+12,-8],[w*.52,h+12]].forEach(([sx,sy],k)=>{const dx=cx-sx,dy=cy-sy,L=Math.hypot(dx,dy);
     for(let j=34;j>=0;j--){const a=t/FLY-j*.011;if(a<0||(t>=FLY&&j))continue;const q=Math.min(1,a),e=q*q*(1.6-.6*q),b=Math.sin(Math.PI*e)*L*.2,r=Math.max(1,(j?6:8)*(1-j/36))|0;
      x.globalAlpha=j?.13:1;x.fillStyle=rgb(COL[k]);x.beginPath();x.arc((sx+dx*e-dy/L*b)|0,(sy+dy*e+dx/L*b)|0,r,0,7);x.fill()}});
    x.globalAlpha=1;x.globalCompositeOperation='source-over';
-   if(t>FLY-.08){const q=sm(FLY-.08,POP,t),r=4+q*h*.13;[[1.9,.16],[1.45,.3],[1,1]].forEach(([m,a])=>{x.globalAlpha=a;x.fillStyle=rgb(mix([255,255,255],[255,208,50],q));x.beginPath();x.arc(cx,cy,r*m,0,7);x.fill()});x.globalAlpha=1}
-  }else{const q=Math.min(1,(t-POP)/.75),e=1-Math.pow(1-q,3);
-   if(q<1)for(let i=0;i<20;i++){const a=i/20*Math.PI*2+.1,l=R*(.3+1.1*e),s=.045;x.fillStyle=i%2?'#ffd23c':'#fff0a0';x.beginPath();x.moveTo(cx,cy);x.lineTo(cx+Math.cos(a-s)*l,cy+Math.sin(a-s)*l);x.lineTo(cx+Math.cos(a+s)*l,cy+Math.sin(a+s)*l);x.fill()}
-   [[1.15,[244,164,36]],[.86,[250,186,52]],[.62,[255,206,78]],[.42,[255,224,122]],[.26,[255,238,170]]].forEach(([m,k])=>{x.fillStyle=rgb(k);x.beginPath();x.arc(cx,cy,R*m*e,0,7);x.fill()});
-   x.strokeStyle='#fffbe0';x.lineWidth=2.4;for(let i=0;i<26;i++){const a=i/26*Math.PI*2,o=calm?0:Math.sin(now/500+i*2)*2,A=(w*.39+o)*e,B=(h*.42+o)*e,m=1+.1*e;x.beginPath();x.moveTo(cx+Math.cos(a)*A,cy+Math.sin(a)*B);x.lineTo(cx+Math.cos(a)*A*m,cy+Math.sin(a)*B*m);x.stroke()}
-   if(q<1){x.globalAlpha=.75*(1-q);x.fillStyle='#fff';x.fillRect(0,0,w,h);x.globalAlpha=1}
-   if(!shown&&t>POP+.6){shown=true;$('bt').classList.add('on');$('go').focus({preventScroll:true})}}
+  }
+  if(t>FLY-.08){const q=sm(FLY-.08,POP,t),b=Math.min(1,Math.max(0,(t-POP)/2)),e=1-Math.pow(1-b,2.2),id=b<1?x.getImageData(0,0,w,h):gold&&gold.width===w&&gold.height===h?gold:(gold=x.getImageData(0,0,w,h)),p=id.data,
+    S=2+q*h*.16+(R*2.6-h*.16)*e*e,core=S*.5,hot=1-sm(.15,1,b),                  // S: 빛이 번진 폭, hot: 가운데 눈부심
+    T=calm?-1:t-POP-1.1,pst=sm(1.2,2.2,t-POP),drops=[];
+   // 물방울: 2.6초마다 가운데 한 방울, 파동이 바깥으로 퍼지며 잦아듦
+   if(T>0)for(let n=Math.floor(T/2.6);n>=0&&n>T/2.6-4;n--){const a=T-n*2.6;drops.push([a*R*.3,Math.exp(-a*.42)*Math.min(1,a*3)])}
+   const kk=Math.PI*2/(R*.1),ww=R*.13,N=Math.ceil(R*2)+2,lut=new Float32Array(N*4);   // 거리별 색을 먼저 계산해 두고 픽셀마다 찾아 씀
+   for(let n=0;n<N;n++){const d=n/2;let H2=0;
+    for(const [f,am] of drops){const z=d-f;if(z<ww*2.4&&z>-ww*2.4)H2+=am*Math.cos(z*kk)*Math.exp(-z*z/(ww*ww))}
+    const u=Math.min(.999,Math.max(0,d/R/1.1-H2*.05))*4,m=u|0,v=u-m,A=GOLD[m],B=GOLD[m+1],
+     L=b<1?1-Math.exp(-(4.6+b*3)*Math.exp(-(d*d)/(S*S))):1,W2=Math.min(1,(b<1?hot*Math.exp(-(d*d)/(core*core)):0)+Math.max(0,H2)*.38),dk=1-Math.max(0,-H2)*.1;
+    // 포스터화: 5단 색으로 딱 끊고, 파동이 지나가면 단 경계가 밀려 고리로 보임
+    const dr=d/R;let st=0;while(st<4&&dr>=BAND[st])st++;const lo=st?BAND[st-1]:0,hi=st<4?BAND[st]:1.15,P=GOLD2[Math.max(0,Math.min(4,Math.floor(st+(dr-lo)/(hi-lo)-H2*.9)))];
+    for(let c=0;c<3;c++){const y=(A[c]+(B[c]-A[c])*v)*dk,z=y+(255-y)*W2;lut[n*4+c]=z+(P[c]-z)*pst}lut[n*4+3]=L}
+   if(!dist||dist.length!==w*h||dist.w!==w){dist=new Uint16Array(w*h);dist.w=w;for(let yy=0,o=0;yy<h;yy++)for(let xx=0;xx<w;xx++)dist[o++]=Math.min(N-1,Math.hypot(xx+.5-cx,yy+.5-cy)*2|0)}
+   for(let o=0,k=0;o<dist.length;o++,k+=4){const n=dist[o]*4,L=lut[n+3];p[k]+=(lut[n]-p[k])*L;p[k+1]+=(lut[n+1]-p[k+1])*L;p[k+2]+=(lut[n+2]-p[k+2])*L}
+   x.putImageData(id,0,0);
+   if(!shown&&t>POP+1.2){shown=true;$('bt').classList.add('on');$('go').focus({preventScroll:true})}}
  })(performance.now())}
 function enter(u=0){started=true;document.documentElement.classList.remove('lock');scrollTo(0,maxY()*u/4);$('intro').hidden=true;
  $('burst').classList.add('out');setTimeout(()=>{$('burst').hidden=true},750)}
