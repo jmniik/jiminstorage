@@ -23,18 +23,18 @@ h1,h2,h3,p{margin:0}h1,h2,h3{font-weight:900}
 .ask{position:absolute;left:52%;top:65%;transform:translate(-50%,-50%);width:min(40vw,90%);text-align:center}
 .ask h1{font-size:clamp(20px,2.35vw,46px);line-height:1.5;letter-spacing:.05em;text-shadow:0 3px 0 #0a1a44;margin-bottom:1.1em}
 .ask div{display:flex;flex-direction:column;gap:clamp(12px,2vh,20px);align-items:center}
-.ask .px{width:min(310px,100%);font-size:clamp(15px,1.25vw,20px)}
+.ask .px{width:min(340px,100%);font-size:clamp(16px,1.5vw,24px)}
 #burst canvas{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated}
 .bt{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;color:#3a2200;opacity:0;visibility:hidden;transition:opacity .6s}
 .bt.on{opacity:1;visibility:visible}
 .bt h1{font-size:clamp(38px,6vw,88px);letter-spacing:.1em;margin-bottom:.45em}
 .bt .px{font-size:clamp(17px,1.7vw,25px)}
-.bt h2{font-size:clamp(17px,1.4vw,22px);margin:2em 0 .5em;letter-spacing:.05em}.bt p{font-size:clamp(15px,1.15vw,18px);line-height:1.6;max-width:34em}
+.bt h2{font-size:clamp(17px,1.4vw,22px);margin:2em 0 .5em;letter-spacing:.05em}.bt p{font-size:clamp(16px,1.35vw,21px);line-height:1.6;max-width:34em}
 /* 3~7 */
 #scroll{height:820vh;position:relative}
 #stage{position:sticky;top:0;height:100vh;overflow:hidden}
 #c{display:block;width:100%;height:100%}
-.cap{position:absolute;left:6%;right:6%;top:9vh;text-align:center;pointer-events:none;opacity:0;transition:opacity .35s;text-shadow:0 2px 0 #000}
+.cap{position:absolute;left:6%;right:6%;top:9vh;text-align:center;pointer-events:none;opacity:0;transition:opacity .35s;text-shadow:0 2px 0 #0a0a18,2px 0 0 #0a0a18,-2px 0 0 #0a0a18,0 -2px 0 #0a0a18}
 .cap.on{opacity:1}
 .cap h2{font-size:clamp(30px,4.6vw,62px);letter-spacing:.1em;text-shadow:0 3px 0 #000}
 .cap p{margin:14px auto 0;font-size:clamp(16px,1.6vw,22px);line-height:1.65;letter-spacing:.04em;max-width:36em;white-space:pre-line}
@@ -49,6 +49,7 @@ h1,h2,h3,p{margin:0}h1,h2,h3{font-weight:900}
 .piece:hover svg{filter:drop-shadow(0 0 18px var(--c)) brightness(1.15)}
 @keyframes fl{to{transform:translateY(-10px)}}
 #srcBtn{position:absolute;left:18px;bottom:16px;background:#0a0a18;border:2px solid #fff;padding:6px 12px;font-size:13px;opacity:0;visibility:hidden}#srcBtn.on{opacity:1;visibility:visible}
+.dots .home{width:40px;height:40px;margin:0 -7px 8px;background:#0a0a18;border:2px solid #fff}.dots .home:hover{background:#3a3c66}.dots .home svg{width:24px;height:24px}
 /* 창 */
 dialog{border:6px solid #0a0a18;background:#fbf6e6;color:#1c1a2b;padding:0;width:min(1180px,88vw);height:min(760px,84vh);max-width:none;max-height:none;margin:auto;overflow:hidden}
 dialog[open]{display:flex;flex-direction:column}
@@ -67,10 +68,10 @@ dialog::backdrop{background:transparent}
 .pic::after{content:"사진 넣을 자리";position:absolute;right:8px;top:8px;background:#0a0a18;color:#fff;font-size:12px;padding:2px 8px}
 .body h3{font-size:1.45em;margin-bottom:.5em}.body p+p{margin-top:.8em}
 .todo{color:#75695a}
-.cards{display:grid;grid-template-columns:1fr 1fr;gap:20px 36px}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:32px 36px}
 .card{display:flex;gap:16px;align-items:center}
-.card .ic{width:84px;height:84px;flex:none;border:4px solid #0a0a18;background:#fff;display:grid;place-items:center}
-.goods{display:grid;grid-template-columns:repeat(3,1fr);gap:26px}
+.card .ic{width:108px;height:108px;flex:none;border:4px solid #0a0a18;background:#fff;display:grid;place-items:center}
+.goods{display:grid;grid-template-columns:repeat(3,1fr);gap:18px 26px}.goods .ph{aspect-ratio:2/1}
 .ph{border:4px solid #0a0a18;background:#ffe9a6;aspect-ratio:4/3;display:grid;place-items:center;color:#75581a;margin-bottom:8px;font-size:14px}
 .cast{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;text-align:center;margin-bottom:24px}
 .cast figure{margin:0}
@@ -115,7 +116,7 @@ const calm=matchMedia('(prefers-reduced-motion:reduce)').matches;
 /* ===== 글: 여기만 고치면 됨. 전구 순서 흰 → 파 → 빨 → 초 → 노 ===== */
 const SCENES=[
  {spr:'white',glow:null,c:'#f4f3ff',t:'빛을 잃은 하루',p:'바쁘게 살다 나를 돌보지 못한 전구가 빛을 잃었어요.\n다시 켜지려고 빛고을 광주로 빛 조각을 찾으러 가요.\n혼자서는 다시 빛날 수 없어서 당신의 도움이 필요해요.'},
- {spr:'blue',glow:[70,170,255],c:'#3aa5ff',t:'보고, 파란 빛',p:'ACC 전시와 옛 전남도청, 전일빌딩245를\n천천히 둘러보며 파란 빛 조각을 찾아요.'},
+ {spr:'blue',hide:true,glow:null,c:'#3aa5ff',t:'보고, 파란 빛',p:'ACC 전시와 옛 전남도청, 전일빌딩245를\n천천히 둘러보며 파란 빛 조각을 찾아요.'},
  {spr:'red',glow:[255,80,80],c:'#ff4a4a',t:'먹고, 빨간 빛',p:'충장로와 구시청, 동명동에서\n한 끼를 천천히 즐기며 빨간 빛 조각을 찾아요.'},
  {spr:'green',glow:[100,255,100],c:'#56e04a',t:'걷고, 초록 빛',p:'충장로 골목을 걷고 하늘마당에 누워 쉬며\n초록 빛 조각을 찾아요.'},
  {spr:'yellow',glow:[255,210,100],c:'#ffc53a',t:'빛이 완성됐어요',p:'빨강·초록·파랑 빛이 모여 노란 빛이 켜졌어요.\n함께 걸어 줘서 고마워요.'},
@@ -139,7 +140,7 @@ const WIN={
  gusi:{h:'구시청',html:()=>cards('구시청')},chung:{h:'충장로',html:()=>cards('충장로')},dong:{h:'동명동',html:()=>cards('동명동')},
  hanul:{h:'하늘마당',html:()=>pic('hanul','하늘마당','<p>ACC 지붕 위에 있는 잔디언덕이에요.</p><p>누워서 풍경을 바라보세요.</p>')},
  alley:{h:'충장로 골목',html:()=>pic('alley','충장로 골목','<p>차 대신 사람이 걷는 상점가예요. ACC에서 걸어서 3분 거리예요.</p>'+todo('산책 코스를 넣을 자리'))},
- pam:{h:'팜플렛',html:()=>`<div class="two"><div class="ph" style="aspect-ratio:1/1">팜플렛 이미지 자리</div><div><h3>오늘의 여정을 한 장에</h3>${todo('팜플렛 파일이 완성되면 이미지와 내려받기 버튼을 넣을 자리')}</div></div>`},
+ pam:{h:'팜플렛',html:()=>`<div class="two"><div class="ph" style="aspect-ratio:8/7">팜플렛 이미지 자리</div><div><h3>오늘의 여정을 한 장에</h3>${todo('팜플렛 파일이 완성되면 이미지와 내려받기 버튼을 넣을 자리')}</div></div>`},
  shop:{h:'굿즈샵',html:()=>`<div class="goods">${['하늘마당 피크닉 키트 (가칭)','빛 조각 전구 말랑이 (가칭)','쉼 텀블러 (가칭)','전구 캐릭터 키링','전구 캐릭터 인형','상품 준비 중'].map(n=>`<div><div class="ph">상품 사진 자리</div><b>${n}</b>${todo('가격 미정')}</div>`).join('')}</div>`},
  src:{h:'출처',html:()=>`<table><tr><th>사이트</th><th>주소</th><th>확인한 날짜</th></tr>
  <tr><td>GitHub AXC_team5 readme.md (RGB, 보고·먹고·걷고)</td><td>https://github.com/starlike2you/AXC_team5</td><td>2026-11-25</td></tr>
@@ -212,6 +213,7 @@ const WORLD=[];
   for(let a=-30;a<=16;a+=6)for(const side of[-1,1])for(let n=0;n<2;n++){
    const r=hash(i*7+n*3+side,a*13),seed=(r*1e6)|0,lam=side*(n?30+r*22:15+r*9);
    if(LM[i].some(m=>Math.abs(m.lam-lam)<13&&a<=-m.ph+5))continue;       // 랜드마크 앞은 비움
+   if(a>=-6&&LM[i+1]&&LM[i+1].some(m=>Math.abs(m.lam-lam)<13))continue;   // 다음 장면 랜드마크를 가리지 않게
    let s;if(i===0){const v=60+r*35;s=tower(7+(r*8|0),14+(hash(a,i+n)*26|0),[v,v,v+5],.12,rgb([v*1.4,v*1.4,v*1.45]),seed)}
    else if(i===2)s=shop(10+(r*5|0),14+(hash(a,i)*8|0),warm[seed%5],['#e84a4a','#f08a2a','#d94a7a'][seed%3],seed);
    else s=tower(7+(r*7|0),12+(hash(a,i+n)*(i===3?12:22)|0),warm[seed%5],.55,'#ffe08a',seed);
@@ -243,6 +245,8 @@ const SKY={night:[[10,12,36],[44,46,86]],day:[[110,185,240],[214,236,250]],sunse
 let jump=0,started=false;
 function goU(u){const id=++jump,from=scrollY,to=maxY()*u/4,dur=calm?1:Math.min(2400,600+Math.abs(to-from)*.25),t0=performance.now();
  const st=t=>{if(id!==jump)return;const k=Math.min(1,(t-t0)/dur),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;scrollTo(0,from+(to-from)*e);if(k<1)requestAnimationFrame(st)};requestAnimationFrame(st)}
+{const b=document.createElement('button');b.className='home';b.title='맨 처음으로';b.setAttribute('aria-label','맨 처음 화면으로');
+ b.innerHTML='<svg viewBox="0 0 12 12" shape-rendering="crispEdges"><path fill="#fff" d="M5 1h2v1h1v1h1v1h1v1h1v1h-1v5H7V8H5v3H2V6H1V5h1V4h1V3h1V2h1z"/></svg>';b.onclick=goHome;$('dots').append(b)}
 addEventListener('wheel',()=>jump++,{passive:true});addEventListener('touchstart',()=>jump++,{passive:true});
 SCENES.forEach((s,n)=>{const b=document.createElement('button');b.innerHTML=`<i style="background:${s.c}"></i>`;b.setAttribute('aria-label',s.t+' 장면으로');b.onclick=()=>goU(n);$('dots').append(b)});
 
@@ -255,7 +259,7 @@ function frame(){
  g.imageSmoothingEnabled=false;
  const top=mix(mix(SKY.day[0],SKY.night[0],n),SKY.sunset[0],ss),bot=mix(mix(mix(SKY.day[1],SKY.night[1],n),SKY.sunset[1],ss),[255,170,140],dawn*.6);
  for(let y=0;y<bh;y+=3){g.fillStyle=rgb(mix(top,bot,Math.min(1,y/(bh*.75))));g.fillRect(0,y,bw,3)}
- if(n>0){g.globalAlpha=n;g.fillStyle='#fff';STARS.forEach(([x,y,b])=>{if(b>.7||Math.sin(now/400+x)>-.3)g.fillRect(x,y,1,1)});g.globalAlpha=1}
+ if(n>0){g.globalAlpha=n;g.fillStyle='#fff';STARS.forEach(([x,y,b])=>{if(y<bh*.36&&Math.abs(x-bw/2)<bw*.21)return;if(b>.7||Math.sin(now/400+x)>-.3)g.fillRect(x,y,1,1)});g.globalAlpha=1}
  const glow=[0,1,2].map(k=>SCENES.reduce((a,s,i)=>a+(s.glow?s.glow[k]:0)*w[i],0)),gs=Math.min(1,SCENES.reduce((a,s,i)=>a+(s.glow?w[i]:0),0));
  const standY=Math.round(PCY-PR*Math.cos(26*D)),dh=Math.min(H*.3,W*.34);
  if(gs>0)for(let r=6;r>=1;r--){const rr=r*bw*.03;g.fillStyle=rgb(glow);g.globalAlpha=.09*gs;for(let y=-rr;y<=rr;y+=2){const xw=Math.round(Math.sqrt(rr*rr-y*y));g.fillRect(PCX-xw,Math.round(standY-dh/PX*.55+y),xw*2,2)}}
@@ -278,15 +282,15 @@ function frame(){
  fr.sort((a,b)=>a.z-b.z).forEach(drawB);
  LM.flat().forEach(m=>{if(!seen.has(m))m.el.classList.remove('on')});
  if(gs>0){g.globalAlpha=.16*gs;g.fillStyle=rgb(glow);for(let i=0;i<2;i++){g.beginPath();g.ellipse(PCX,standY+1,bw*(.055-i*.02),3-i,0,0,7);g.fill()}g.globalAlpha=1}
- {const s=dh/PX*.3;g.fillStyle='rgba(0,0,0,.32)';g.beginPath();g.ellipse(PCX,standY+1,s,Math.max(1.5,s*.14),0,0,7);g.fill()}
+ {const s=dh/PX*.3;g.fillStyle=`rgba(0,0,0,${.32*Math.min(1,SCENES.reduce((a,s,i)=>a+(s.hide?0:w[i]),0))})`;g.beginPath();g.ellipse(PCX,standY+1,s,Math.max(1.5,s*.14),0,0,7);g.fill()}
  ctx.imageSmoothingEnabled=false;ctx.drawImage(buf,0,0,bw,bh,0,0,W*dpr,H*dpr);
- ctx.font=`600 ${15*dpr}px Pretendard,sans-serif`;ctx.textAlign='center';
+ ctx.font=`600 ${18*dpr}px Pretendard,sans-serif`;ctx.textAlign='center';
  for(const l of labels){ctx.globalAlpha=l.al;const y=Math.min(H-8,l.y+20);ctx.lineWidth=5*dpr;ctx.lineJoin='round';ctx.strokeStyle='#0a0a18';ctx.strokeText(l.t,l.x*dpr,y*dpr);ctx.fillStyle='#fff';ctx.fillText(l.t,l.x*dpr,y*dpr)}ctx.globalAlpha=1;
- SCENES.forEach((s,i)=>walker(s.spr,W/2,(standY+1)*PX,dh,w[i]));
+ SCENES.forEach((s,i)=>{if(!s.hide)walker(s.spr,W/2,(standY+1)*PX,dh,w[i])});   // hide: 5·18 장소 장면은 전구 없이
  [...$('caps').children].forEach((e,i)=>e.classList.toggle('on',i===4?u>3.85:i?u>i-.15&&u<i+TXT:u<TXT));
  const f=u-Math.floor(u);$('hint').textContent=u<TXT?'빛 조각 찾으러 가기  SCROLL ▼':f>=TXT&&f<HOLD&&u<4?'빛 조각을 눌러 보세요':'';
  $('srcBtn').classList.toggle('on',u>3.9);
- [...$('dots').children].forEach((e,i)=>e.classList.toggle('on',i===cur));
+ [...$('dots').children].slice(1).forEach((e,i)=>e.classList.toggle('on',i===cur));
 }
 
 /* ===== 창 ===== */
@@ -330,6 +334,9 @@ function startBurst(){if($('intro').classList.contains('out'))return;
 function enter(u=0){started=true;document.documentElement.classList.remove('lock');scrollTo(0,maxY()*u/4);$('intro').hidden=true;
  $('burst').classList.add('out');setTimeout(()=>{$('burst').hidden=true},750)}
 $('go').onclick=()=>enter();
+function goHome(){jump++;started=false;$('burst').hidden=true;$('burst').classList.remove('out');$('bt').classList.remove('on');
+ $('intro').hidden=false;$('intro').offsetWidth;$('intro').classList.remove('out');document.documentElement.classList.add('lock');scrollTo(0,0);
+ if(location.hash)history.replaceState(null,'',location.pathname+location.search)}
 document.documentElement.classList.add('lock');scrollTo(0,0);
 const hs=/^#([2-7])$/.exec(location.hash);          // 주소 끝에 #3~#7 을 붙이면 그 장면부터 보기
 if(hs)hs[1]==='2'?startBurst():enter(hs[1]-3);
